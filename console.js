@@ -42,7 +42,8 @@
     glm: 'glm-4-flash',
     qwen: 'qwen-turbo',
     kimi: 'moonshot-v1-8k',
-    openrouter: 'deepseek/deepseek-chat-v3-0324:free'
+    openrouter: 'deepseek/deepseek-chat-v3-0324:free',
+    siliconflow: 'deepseek-ai/DeepSeek-V3'
   }
 
   // ----- state -----
@@ -368,6 +369,7 @@
     if (p === 'qwen') return callOpenAI('https://dashscope-international.aliyuncs.com/compatible-mode/v1')()
     if (p === 'kimi') return callOpenAI('https://api.moonshot.cn/v1')()
     if (p === 'openrouter') return callOpenAI('https://openrouter.ai/api/v1')()
+    if (p === 'siliconflow') return callOpenAI('https://api.siliconflow.com/v1')()
     if (p === 'anthropic') return callAnthropic()
     if (p === 'gemini') return callGemini()
     return Promise.reject(new Error('Unknown provider'))
@@ -560,7 +562,8 @@
       glm: 'https://open.bigmodel.cn/api/paas/v4',
       qwen: 'https://dashscope-international.aliyuncs.com/compatible-mode/v1',
       kimi: 'https://api.moonshot.cn/v1',
-      openrouter: 'https://openrouter.ai/api/v1'
+      openrouter: 'https://openrouter.ai/api/v1',
+      siliconflow: 'https://api.siliconflow.com/v1'
     }
     var base = VERIFY_BASE[p] || 'https://api.openai.com/v1'
     return fetch(base + '/models', { headers: { Authorization: 'Bearer ' + state.llm.key } }).then(checkJson)
