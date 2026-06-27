@@ -312,9 +312,12 @@
         </svg>
         <span>Easy<span class="claw">Claw</span></span>
       </div>
-      <a class="nav-link" href="https://github.com/Fame510/easyclaw" target="_blank" rel="noopener"
-        >GitHub ↗</a
-      >
+      <div style="display:flex; gap:18px; align-items:center">
+        <a class="nav-link" href="./app.html">Console</a>
+        <a class="nav-link" href="https://github.com/Fame510/easyclaw" target="_blank" rel="noopener"
+          >GitHub ↗</a
+        >
+      </div>
     </nav>
 
     <header class="hero">
@@ -364,19 +367,21 @@
       </p>
 
       <div class="download-area">
+        <a class="btn btn-primary" id="launchConsole" href="./app.html">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm2 5 3 3-3 3M11 15h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Launch the Claw (in your browser)</span>
+        </a>
         <a
-          class="btn btn-primary"
+          class="btn-version"
           id="primaryDownload"
+          style="color: var(--text-muted); text-decoration: none"
           href="https://github.com/Fame510/easyclaw/releases/latest/download/EasyClaw.AppImage"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path
-              d="M12 3a1 1 0 0 1 1 1v9.59l3.3-3.3a1 1 0 0 1 1.4 1.42l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V4a1 1 0 0 1 1-1Zm-7 14a1 1 0 0 1 1 1v1h12v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1Z"
-            />
-          </svg>
-          <span id="primaryLabel">Download for Linux (AppImage)</span>
+          ↓ Or download the Linux desktop app (AppImage)
         </a>
-        <span class="btn-version" id="versionLabel">Always serves the latest release</span>
+        <span class="btn-version" id="versionLabel">Bring your own LLM key • connect GitHub, Gmail, Firecrawl</span>
 
         <div class="secondary-links">
           <a
