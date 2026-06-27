@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EasyClaw — Your Own AI Agent, One Click Away</title>
+    <meta
+      name="description"
+      content="EasyClaw is a one-click installer for the OpenClaw AI agent. Download, install, and chat with your own AI on Telegram."
+    />
+    <meta property="og:title" content="EasyClaw — Your Own AI Agent, One Click Away" />
+    <meta
+      property="og:description"
+      content="One-click installer for the OpenClaw AI agent."
+    />
+    <meta property="og:type" content="website" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cpath d='M60 12C32 12 16 35 16 55c0 19 14 38 28 43v10h9V98c3 1 7 2 7 2s4-1 7-2v10h9V98c14-5 28-24 28-43 0-20-16-43-44-43Z' fill='%23f97316'/%3E%3Ccircle cx='45' cy='40' r='7' fill='%23050810'/%3E%3Ccircle cx='75' cy='40' r='7' fill='%23050810'/%3E%3C/svg%3E"
+    />
+    <style>
+      :root {
+        --primary: #f97316;
+        --primary-light: #fb923c;
+        --bg: #080c18;
+        --bg-card: rgba(255, 255, 255, 0.04);
+        --text: #e8edf7;
+        --text-muted: #8b93a7;
+        --success: #34d399;
+        --border: rgba(255, 255, 255, 0.08);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        overflow-x: hidden;
+        position: relative;
+        min-height: 100vh;
+      }
+      /* Aurora background */
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(60% 50% at 20% 0%, rgba(249, 115, 22, 0.18), transparent 70%),
+          radial-gradient(50% 50% at 90% 10%, rgba(56, 189, 248, 0.1), transparent 70%),
+          radial-gradient(60% 60% at 50% 100%, rgba(249, 115, 22, 0.08), transparent 70%);
+        z-index: -2;
+        pointer-events: none;
+      }
+      .grain {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        opacity: 0.04;
+        pointer-events: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+      nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 28px;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+        font-size: 19px;
+        letter-spacing: -0.5px;
+      }
+      .brand .claw {
+        background: linear-gradient(90deg, var(--primary), var(--primary-light));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .nav-link {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        transition: color 0.2s;
+      }
+      .nav-link:hover {
+        color: var(--text);
+      }
+      .hero {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 48px 24px 32px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 22px;
+      }
+      .logo-wrap {
+        position: relative;
+      }
+      .logo-wrap::after {
+        content: '';
+        position: absolute;
+        inset: -30% -30%;
+        background: radial-gradient(circle, rgba(249, 115, 22, 0.25), transparent 65%);
+        z-index: -1;
+        filter: blur(20px);
+      }
+      .logo-wrap svg {
+        animation: float 4s ease-in-out infinite;
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+      h1 {
+        font-size: clamp(2.2rem, 6vw, 3.4rem);
+        font-weight: 900;
+        letter-spacing: -1.5px;
+        line-height: 1.1;
+      }
+      h1 .claw {
+        background: linear-gradient(90deg, var(--primary), var(--primary-light));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .tagline {
+        font-size: clamp(1rem, 2.5vw, 1.25rem);
+        color: var(--text-muted);
+        font-weight: 600;
+        max-width: 520px;
+      }
+      .subtext {
+        color: var(--text-muted);
+        opacity: 0.8;
+        font-size: 0.95rem;
+        max-width: 460px;
+      }
+      .download-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        margin-top: 6px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px 30px;
+        border-radius: 14px;
+        font-weight: 800;
+        font-size: 1.05rem;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition:
+          transform 0.15s,
+          box-shadow 0.2s,
+          opacity 0.2s;
+      }
+      .btn-primary {
+        background: linear-gradient(90deg, var(--primary), var(--primary-light));
+        color: #1a0d02;
+        box-shadow: 0 10px 30px rgba(249, 115, 22, 0.35);
+      }
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 38px rgba(249, 115, 22, 0.5);
+      }
+      .btn-version {
+        font-size: 0.78rem;
+        font-weight: 600;
+        opacity: 0.75;
+      }
+      .secondary-links {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        justify-content: center;
+        font-size: 0.88rem;
+      }
+      .secondary-links a {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-weight: 600;
+        border-bottom: 1px dashed rgba(255, 255, 255, 0.18);
+        padding-bottom: 1px;
+        transition: color 0.2s;
+      }
+      .secondary-links a:hover {
+        color: var(--primary-light);
+      }
+      .platform-note {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        opacity: 0.7;
+      }
+      /* Steps */
+      .steps {
+        max-width: 880px;
+        margin: 40px auto 0;
+        padding: 0 24px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+      }
+      .step {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px;
+        backdrop-filter: blur(8px);
+      }
+      .step .num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        background: rgba(249, 115, 22, 0.15);
+        color: var(--primary-light);
+        font-weight: 800;
+        margin-bottom: 12px;
+      }
+      .step h3 {
+        font-size: 1.05rem;
+        margin-bottom: 6px;
+      }
+      .step p {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+      .step code {
+        background: rgba(0, 0, 0, 0.4);
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-size: 0.82rem;
+        color: var(--primary-light);
+        word-break: break-all;
+      }
+      footer {
+        max-width: 1100px;
+        margin: 56px auto 0;
+        padding: 28px 24px 40px;
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        border-top: 1px solid var(--border);
+      }
+      footer a {
+        color: var(--text-muted);
+        text-decoration: underline;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(52, 211, 153, 0.12);
+        color: var(--success);
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 5px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(52, 211, 153, 0.25);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grain"></div>
+
+    <nav>
+      <div class="brand">
+        <svg width="30" height="30" viewBox="0 0 120 120" fill="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="navg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fb923c" />
+              <stop offset="100%" stop-color="#c2410c" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M60 12 C32 12 16 35 16 55 C16 74 30 93 44 98 L44 108 L53 108 L53 98 C56 99 60 100 60 100 C60 100 64 99 67 98 L67 108 L76 108 L76 98 C90 93 104 74 104 55 C104 35 88 12 60 12Z"
+            fill="url(#navg)"
+          />
+          <circle cx="45" cy="40" r="7" fill="#050810" />
+          <circle cx="75" cy="40" r="7" fill="#050810" />
+          <circle cx="47" cy="38" r="3" fill="#34d4b0" />
+          <circle cx="77" cy="38" r="3" fill="#34d4b0" />
+        </svg>
+        <span>Easy<span class="claw">Claw</span></span>
+      </div>
+      <a class="nav-link" href="https://github.com/Fame510/easyclaw" target="_blank" rel="noopener"
+        >GitHub ↗</a
+      >
+    </nav>
+
+    <header class="hero">
+      <div class="logo-wrap">
+        <svg width="140" height="140" viewBox="0 0 120 120" fill="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="mg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fb923c" />
+              <stop offset="100%" stop-color="#c2410c" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M45 15 Q36 4 29 7"
+            stroke="#fb923c"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            fill="none"
+          />
+          <path
+            d="M75 15 Q84 4 91 7"
+            stroke="#fb923c"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            fill="none"
+          />
+          <path
+            d="M60 12 C32 12 16 35 16 55 C16 74 30 93 44 98 L44 108 L53 108 L53 98 C56 99 60 100 60 100 C60 100 64 99 67 98 L67 108 L76 108 L76 98 C90 93 104 74 104 55 C104 35 88 12 60 12Z"
+            fill="url(#mg)"
+          />
+          <path d="M20 44 C6 39 1 49 5 58 C9 67 19 63 24 54 C27 48 24 44 20 44Z" fill="url(#mg)" />
+          <path
+            d="M100 44 C114 39 119 49 115 58 C111 67 101 63 96 54 C93 48 96 44 100 44Z"
+            fill="url(#mg)"
+          />
+          <circle cx="45" cy="40" r="7" fill="#050810" />
+          <circle cx="75" cy="40" r="7" fill="#050810" />
+          <circle cx="47" cy="38" r="3" fill="#34d4b0" />
+          <circle cx="77" cy="38" r="3" fill="#34d4b0" />
+        </svg>
+      </div>
+
+      <span class="badge" id="liveBadge">● Self-hosted • your repo, your releases</span>
+
+      <h1>Your Own AI Agent,<br /><span class="claw">One Click Away</span></h1>
+      <p class="tagline">
+        EasyClaw installs the OpenClaw AI agent for you — then you chat with your own AI on Telegram.
+      </p>
+
+      <div class="download-area">
+        <a class="btn btn-primary" id="primaryDownload" href="https://github.com/Fame510/easyclaw/releases/latest">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path
+              d="M12 3a1 1 0 0 1 1 1v9.59l3.3-3.3a1 1 0 0 1 1.4 1.42l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V4a1 1 0 0 1 1-1Zm-7 14a1 1 0 0 1 1 1v1h12v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1Z"
+            />
+          </svg>
+          <span id="primaryLabel">Download for Linux</span>
+        </a>
+        <span class="btn-version" id="versionLabel">Loading latest release…</span>
+
+        <div class="secondary-links">
+          <a id="appimageLink" href="https://github.com/Fame510/easyclaw/releases/latest">AppImage</a>
+          <a id="snapLink" href="https://github.com/Fame510/easyclaw/releases/latest">Snap (.snap)</a>
+          <a href="https://github.com/Fame510/easyclaw/releases" target="_blank" rel="noopener"
+            >All releases</a
+          >
+        </div>
+        <p class="platform-note" id="platformNote">
+          macOS &amp; Windows builds are produced via the repo's GitHub Actions release workflow.
+        </p>
+      </div>
+    </header>
+
+    <section class="steps">
+      <div class="step">
+        <span class="num">1</span>
+        <h3>Download</h3>
+        <p>Grab the installer for your OS with a single click above.</p>
+      </div>
+      <div class="step">
+        <span class="num">2</span>
+        <h3>Install</h3>
+        <p>
+          On Linux: <code>chmod +x EasyClaw-*.AppImage</code> then run it
+          (<code>--appimage-extract-and-run</code> if FUSE is missing).
+        </p>
+      </div>
+      <div class="step">
+        <span class="num">3</span>
+        <h3>Chat</h3>
+        <p>Add your API key, connect Telegram, and chat with your own AI agent.</p>
+      </div>
+    </section>
+
+    <footer>
+      <p>
+        EasyClaw — one-click installer for the
+        <a href="https://github.com/Fame510/easyclaw" target="_blank" rel="noopener">OpenClaw</a>
+        AI agent. MIT licensed. Hosted on GitHub Pages, fully under your control.
+      </p>
+    </footer>
+
+    <script>
+      // Pull the latest release from THIS repo so download links always point
+      // at the newest build, regardless of version number.
+      var REPO = 'Fame510/easyclaw';
+      var RELEASES = 'https://github.com/' + REPO + '/releases';
+
+      function osLabel() {
+        var ua = navigator.userAgent;
+        if (/Windows/i.test(ua)) return 'Windows';
+        if (/Mac OS X|Macintosh/i.test(ua)) return 'macOS';
+        if (/Android/i.test(ua)) return 'Android';
+        return 'Linux';
+      }
+
+      (function () {
+        var primary = document.getElementById('primaryDownload');
+        var primaryLabel = document.getElementById('primaryLabel');
+        var versionLabel = document.getElementById('versionLabel');
+        var appimageLink = document.getElementById('appimageLink');
+        var snapLink = document.getElementById('snapLink');
+        var platformNote = document.getElementById('platformNote');
+
+        var detected = osLabel();
+        if (detected !== 'Linux') {
+          platformNote.innerHTML =
+            'Detected <strong>' +
+            detected +
+            '</strong>. Linux builds are available now — macOS/Windows builds are produced via the repo\u2019s GitHub Actions release workflow.';
+        }
+
+        fetch('https://api.github.com/repos/' + REPO + '/releases/latest', {
+          headers: { Accept: 'application/vnd.github+json' }
+        })
+          .then(function (r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+          })
+          .then(function (rel) {
+            var assets = rel.assets || [];
+            var appimage = assets.filter(function (a) {
+              return /\.AppImage$/i.test(a.name);
+            })[0];
+            var snap = assets.filter(function (a) {
+              return /\.snap$/i.test(a.name);
+            })[0];
+
+            versionLabel.textContent = rel.tag_name
+              ? rel.tag_name + ' • ' + (appimage ? (appimage.size / 1048576).toFixed(0) + ' MB' : '')
+              : 'Latest release';
+
+            if (appimage) {
+              primary.href = appimage.browser_download_url;
+              primaryLabel.textContent = 'Download for Linux (AppImage)';
+              appimageLink.href = appimage.browser_download_url;
+            }
+            if (snap) {
+              snapLink.href = snap.browser_download_url;
+            }
+          })
+          .catch(function () {
+            // Fallback: link straight to the releases page.
+            versionLabel.textContent = 'View releases →';
+            primary.href = RELEASES + '/latest';
+            appimageLink.href = RELEASES + '/latest';
+            snapLink.href = RELEASES + '/latest';
+          });
+      })();
+    </script>
+  </body>
+</html>
