@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>EasyClaw Console — Your AI Agent</title>
-    <meta name="description" content="Browser-based EasyClaw AI agent: bring your own LLM key, connect GitHub, Gmail and Firecrawl, and get things done." />
+    <title>DUCKi — Powered by AEON DUX</title>
+    <meta name="description" content="DUCKi by AEON DUX — a quantum-infused browser AI agent: bring your own LLM key, connect GitHub, Gmail and Firecrawl, and get things done." />
     <link
       rel="icon"
       type="image/svg+xml"
@@ -12,8 +12,8 @@
     />
     <style>
       :root {
-        --primary: #f97316;
-        --primary-light: #fb923c;
+        --primary: #f5a623;
+        --primary-light: #4fc3f7;
         --bg: #080c18;
         --panel: #0d1322;
         --card: rgba(255, 255, 255, 0.04);
@@ -145,12 +145,18 @@
       <div class="brand">
         <button class="menu-btn" id="menuBtn" aria-label="Toggle connections">☰</button>
         <svg width="26" height="26" viewBox="0 0 120 120" fill="none" aria-hidden="true">
-          <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fb923c"/><stop offset="1" stop-color="#c2410c"/></linearGradient></defs>
-          <path d="M60 12 C32 12 16 35 16 55 C16 74 30 93 44 98 L44 108 L53 108 L53 98 C56 99 60 100 60 100 C60 100 64 99 67 98 L67 108 L76 108 L76 98 C90 93 104 74 104 55 C104 35 88 12 60 12Z" fill="url(#g)"/>
-          <circle cx="45" cy="40" r="7" fill="#050810"/><circle cx="75" cy="40" r="7" fill="#050810"/>
-          <circle cx="47" cy="38" r="3" fill="#34d4b0"/><circle cx="77" cy="38" r="3" fill="#34d4b0"/>
+          <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5a623"/><stop offset="1" stop-color="#c2410c"/></linearGradient></defs>
+          <!-- DUCKi mascot: duck head -->
+          <ellipse cx="60" cy="62" rx="40" ry="38" fill="#1a1a2e"/>
+          <path d="M30 70 C30 88 44 100 60 100 C76 100 90 88 90 70Z" fill="#222447"/>
+          <path d="M88 66 C104 64 112 70 112 74 C112 78 104 82 90 78 Z" fill="url(#g)"/>
+          <circle cx="50" cy="54" r="8" fill="#ffffff"/><circle cx="74" cy="54" r="8" fill="#ffffff"/>
+          <circle cx="51" cy="55" r="4" fill="#0a0a0a"/><circle cx="75" cy="55" r="4" fill="#0a0a0a"/>
+          <circle cx="49" cy="52" r="1.6" fill="#4fc3f7"/><circle cx="73" cy="52" r="1.6" fill="#4fc3f7"/>
+          <path d="M40 30 Q60 18 80 30 L74 40 Q60 33 46 40 Z" fill="#efe7d2"/>
+          <circle cx="60" cy="30" r="4" fill="#f5a623"/>
         </svg>
-        <span>Easy<span class="claw">Claw</span> Console</span>
+        <span>DUCK<span class="claw">i</span> <span style="font-weight:600;font-size:11px;color:#4fc3f7;letter-spacing:1px;">POWERED BY AEON DUX</span></span>
       </div>
       <a href="./index.html">← Home</a>
     </header>
@@ -244,17 +250,30 @@
         <div class="messages" id="messages">
           <div class="empty" id="empty">
             <svg width="90" height="90" viewBox="0 0 120 120" fill="none" aria-hidden="true">
-              <defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fb923c"/><stop offset="1" stop-color="#c2410c"/></linearGradient></defs>
-              <path d="M45 15 Q36 4 29 7" stroke="#fb923c" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-              <path d="M75 15 Q84 4 91 7" stroke="#fb923c" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-              <path d="M60 12 C32 12 16 35 16 55 C16 74 30 93 44 98 L44 108 L53 108 L53 98 C56 99 60 100 60 100 C60 100 64 99 67 98 L67 108 L76 108 L76 98 C90 93 104 74 104 55 C104 35 88 12 60 12Z" fill="url(#g2)"/>
-              <path d="M20 44 C6 39 1 49 5 58 C9 67 19 63 24 54 C27 48 24 44 20 44Z" fill="url(#g2)"/>
-              <path d="M100 44 C114 39 119 49 115 58 C111 67 101 63 96 54 C93 48 96 44 100 44Z" fill="url(#g2)"/>
-              <circle cx="45" cy="40" r="7" fill="#050810"/><circle cx="75" cy="40" r="7" fill="#050810"/>
-              <circle cx="47" cy="38" r="3" fill="#34d4b0"/><circle cx="77" cy="38" r="3" fill="#34d4b0"/>
+              <defs>
+                <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5a623"/><stop offset="1" stop-color="#c2410c"/></linearGradient>
+                <radialGradient id="atom" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#9be7ff"/><stop offset="1" stop-color="#4fc3f7"/></radialGradient>
+              </defs>
+              <!-- turban -->
+              <path d="M34 34 Q60 14 86 34 L80 46 Q60 36 40 46 Z" fill="#efe7d2"/>
+              <circle cx="60" cy="30" r="5" fill="#f5a623"/>
+              <!-- head -->
+              <ellipse cx="60" cy="64" rx="40" ry="38" fill="#1a1a2e"/>
+              <path d="M30 72 C30 90 44 102 60 102 C76 102 90 90 90 72Z" fill="#222447"/>
+              <!-- beak -->
+              <path d="M88 68 C106 65 116 72 116 76 C116 80 106 85 90 80 Z" fill="url(#g2)"/>
+              <!-- glowing glasses -->
+              <circle cx="49" cy="56" r="10" fill="#ffffff"/><circle cx="75" cy="56" r="10" fill="#ffffff"/>
+              <circle cx="49" cy="56" r="6" fill="#0a0a0a"/><circle cx="75" cy="56" r="6" fill="#0a0a0a"/>
+              <circle cx="47" cy="53" r="2.4" fill="#4fc3f7"/><circle cx="73" cy="53" r="2.4" fill="#4fc3f7"/>
+              <line x1="59" y1="56" x2="65" y2="56" stroke="#c9a84c" stroke-width="2"/>
+              <!-- floating atom -->
+              <circle cx="104" cy="30" r="5" fill="url(#atom)"/>
+              <ellipse cx="104" cy="30" rx="11" ry="4.5" fill="none" stroke="#4fc3f7" stroke-width="1.4" transform="rotate(35 104 30)"/>
+              <ellipse cx="104" cy="30" rx="11" ry="4.5" fill="none" stroke="#4fc3f7" stroke-width="1.4" transform="rotate(-35 104 30)"/>
             </svg>
-            <h2 style="margin:14px 0 8px; color:var(--text); font-size:20px;">Your claw is ready</h2>
-            <p>Add an LLM key in the sidebar, then ask it to get things done. Connect GitHub, Gmail and Firecrawl to give it real tools.</p>
+            <h2 style="margin:14px 0 8px; color:var(--text); font-size:20px;">DUCKi is ready</h2>
+            <p>Add an LLM key in the sidebar, then ask DUCKi to get things done. Connect GitHub, Gmail and Firecrawl to give it real tools.</p>
             <div class="examples" id="examples">
               <button data-ex="Who am I on GitHub and what are my 5 most recently updated repos?">My GitHub repos</button>
               <button data-ex="Read the README of Fame510/easyclaw and summarize what the project does.">Summarize a repo</button>
