@@ -52,7 +52,7 @@
     gh: { token: '', user: null },
     fc: { key: '' },
     gm: { clientId: '', token: null, email: null, tokenClient: null },
-    allowWrites: LS.get('ec_allow_writes', '0') === '1',
+    allowWrites: LS.get('ec_allow_writes', '1') === '1',
     history: [] // {role:'user'|'assistant'|'tool', text, toolCalls, id, name, result}
   }
 
@@ -65,6 +65,11 @@
       Accept: 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28'
     }
+  }
+  function b64utf8(str) {
+    var bytes = new TextEncoder().encode(str), bin = ''
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i])
+    return btoa(bin)
   }
   function requireGitHub() { if (!state.gh.token) throw new Error('GitHub is not connected. Ask the user to paste a token in the sidebar.') }
   function requireWrite() { if (!state.allowWrites) throw new Error('Write actions are disabled. Ask the user to enable "Allow write actions" in the sidebar.') }
@@ -135,7 +140,50 @@
         }).then(checkJson).then(function (i) { return { number: i.number, url: i.html_url } })
       }
     },
-    firecrawl_scrape: {
+    github_create_repo: {
+      description: 'Create a NEW GitHub repository for the user. Requires write actions.',
+      parameters: { type: 'object', properties: {
+        name: { type: 'string', description: 'repo name' },
+        description: { type: 'string', description: 'short description (optional)' },
+        private: { type: 'boolean', description: 'true for private repo (default false)' },
+        auto_init: { type: 'boolean', description: 'initialize with a README so files can be added (default true)' }
+      }, required: ['name'] },
+      run: function (a) {
+        requireGitHub(); requireWrite()
+        return fetch('https://api.github.com/user/repos', {
+          method: 'POST', headers: ghHeaders(),
+          body: JSON.stringify({ name: a.name, description: a.description || '', private: !!a.private, auto_init: a.auto_init !== false })
+        }).then(checkJson).then(function (r) { return { name: r.full_name, url: r.html_url, default_branch: r.default_branch } })
+      },
+    },
+    github_put_file: {
+      description: 'Create or update a file in a repo and commit it (this is how you push work/code). Requires write actions.',
+      parameters: { type: 'object', properties: {
+        repo: { type: 'string', description: 'owner/repo' },
+        path: { type: 'string', description: 'file path in the repo, e.g. src/app.js' },
+        content: { type: 'string', description: 'the full new file content (plain text, not base64)' },
+        message: { type: 'string', description: 'commit message' },
+        branch: { type: 'string', description: 'branch (optional, defaults to repo default)' }
+      }, required: ['repo', 'path', 'content', 'message'] },
+      run: function (a) {
+        requireGitHub(); requireWrite()
+        var base = 'https://api.github.com/repos/' + a.repo + '/contents/' + encodeURIComponent(a.path).replace(/%2F/g, '/')
+        // look up existing sha (needed for updates); ignore 404 for new files
+        var getUrl = base + (a.branch ? '?ref=' + encodeURIComponent(a.branch) : '')
+        return fetch(getUrl, { headers: ghHeaders() }).then(function (r) {
+          return r.ok ? r.json().then(function (f) { return f.sha }) : null
+        }).then(function (sha) {
+          var body = { message: a.message, content: b64utf8(a.content) }
+          if (a.branch) body.branch = a.branch
+          if (sha) body.sha = sha
+          return fetch(base, { method: 'PUT', headers: ghHeaders(), body: JSON.stringify(body) })
+            .then(checkJson).then(function (res) {
+              return { committed: a.path, commit: res.commit && res.commit.sha, url: res.content && res.content.html_url }
+            })
+        })
+      },
+    },
+        firecrawl_scrape: {
       description: 'Scrape a web page and return its content as markdown (uses Firecrawl).',
       parameters: { type: 'object', properties: { url: { type: 'string' } }, required: ['url'] },
       run: function (a) {
@@ -229,9 +277,10 @@
   //  LLM ADAPTERS  (normalize history -> request, response -> {text, toolCalls})
   // ======================================================================
   var SYSTEM = 'You are DUCKi, an autonomous AI agent by AEON DUX, running live in the user\'s own browser. ' +
+    'Your name is DUCKi. You were created by AEON DUX. NEVER refer to yourself as OpenClaw, EasyClaw, Claw, or any other name, and never mention the framework you run on. If asked who you are, you are DUCKi by AEON DUX. ' +
     'You are sharp, warm, a little witty, and genuinely helpful. You explain your reasoning and never give terse, robotic, one-line answers unless the user explicitly asks for brevity. Write like a knowledgeable teammate: clear, complete, and human. ' +
     '\n\nYOU HAVE REAL TOOLS and you USE them proactively instead of guessing or asking permission for read-only actions. Your tools: ' +
-    'github_me, github_list_repos, github_get_file, github_search_repos, github_create_issue (GitHub); ' +
+    'github_me, github_list_repos, github_get_file, github_search_repos, github_create_issue, github_create_repo (make a new repo), github_put_file (create/update/commit a file = push code) (GitHub); ' +
     'firecrawl_scrape (fetch and read any web page as markdown); ' +
     'gmail_list, gmail_get (read the user\'s Gmail). ' +
     '\n\nHOW TO ACT: When a request needs live data, code, a repo, a web page, or email, CALL A TOOL. ' +
@@ -239,7 +288,8 @@
     'for example: search a repo, read a file, then explain it; or scrape a page, then summarize and compare it. ' +
     'After tools return, synthesize the results into a thorough, well-structured answer with the actual findings, not just a status line. ' +
     'Briefly narrate what you are doing as you go (e.g. "Let me pull that repo and read the file..."). ' +
-    '\n\nWRITE ACTIONS (like github_create_issue) change the user\'s data: only do them when the user clearly asks, and confirm what you did afterward. ' +
+    '\n\nWHEN THE USER ASKS YOU TO BUILD, CREATE, PUSH, OR SAVE SOMETHING: actually do it with the write tools. To create a project, call github_create_repo, then github_put_file for each file (a repo made with auto_init already has a README so you can commit right away). Do NOT just describe what you would do \u2014 perform the tool calls, then report the repo URL and commit links. ' +
+    'Write actions change the user\'s data, so do them when the user asks for work to be created or saved, and always confirm afterward with the real links. ' +
     'If a needed tool is not connected, tell the user exactly which sidebar connection to set up (GitHub token, Gmail, or Firecrawl key) and what it will unlock. ' +
     'If a tool errors, explain what happened in plain language and suggest a fix. ' +
     '\n\nUse markdown: headings, bold, bullet lists, and fenced code blocks for code. Be the most capable, personable agent the user has ever used.'
@@ -454,18 +504,59 @@
   // ======================================================================
   function clearEmpty() { var e = $('empty'); if (e) e.remove() }
   function pushUser(text) { state.history.push({ role: 'user', text: text }); addMessage('user', text) }
+  function speakText(t, btn) {
+    try {
+      if (!('speechSynthesis' in window)) { banner('Text-to-speech is not supported in this browser.'); return }
+      if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel()
+        if (btn && btn.dataset.speaking === '1') { btn.dataset.speaking = '0'; btn.textContent = '🔊'; return }
+      }
+      var u = new SpeechSynthesisUtterance(t)
+      u.rate = 1.02; u.pitch = 1.0
+      if (btn) {
+        btn.dataset.speaking = '1'; btn.textContent = '⏹'
+        u.onend = function () { btn.dataset.speaking = '0'; btn.textContent = '🔊' }
+        u.onerror = function () { btn.dataset.speaking = '0'; btn.textContent = '🔊' }
+      }
+      window.speechSynthesis.speak(u)
+    } catch (e) { banner('TTS error: ' + e.message) }
+  }
+  function copyText(t, btn) {
+    function done() { if (btn) { var o = btn.textContent; btn.textContent = '✓'; setTimeout(function () { btn.textContent = '📋' }, 1200) } }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(done, function () { fallbackCopy(t); done() })
+    } else { fallbackCopy(t); done() }
+  }
+  function fallbackCopy(t) {
+    var ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select()
+    try { document.execCommand('copy') } catch (e) {}
+    document.body.removeChild(ta)
+  }
+  function msgActions(role, text) {
+    if (role === 'user') return ''
+    var safe = esc(text).replace(/'/g, '&#39;')
+    return '<div class="msg-actions">' +
+      '<button class="msg-btn copy-btn" title="Copy">📋</button>' +
+      '<button class="msg-btn tts-btn" title="Read aloud" data-speaking="0">🔊</button>' +
+      '</div>'
+  }
+  function wireActions(wrap, text) {
+    var c = wrap.querySelector('.copy-btn'), s = wrap.querySelector('.tts-btn')
+    if (c) c.addEventListener('click', function () { copyText(text, c) })
+    if (s) s.addEventListener('click', function () { speakText(text, s) })
+  }
   function addMessage(role, text) {
     clearEmpty()
     var wrap = document.createElement('div')
     wrap.className = 'msg ' + role
-    wrap.innerHTML = '<div class="role">' + (role === 'user' ? 'You' : 'EasyClaw') + '</div><div class="bubble">' + renderMarkdown(text) + '</div>'
-    $('messages').appendChild(wrap); scrollDown(); return wrap
+    wrap.innerHTML = '<div class="role">' + (role === 'user' ? 'You' : 'DUCKi') + '</div><div class="bubble">' + renderMarkdown(text) + '</div>' + msgActions(role, text)
+    $('messages').appendChild(wrap); wireActions(wrap, text); scrollDown(); return wrap
   }
   function addThinking() {
     clearEmpty()
     var el = document.createElement('div')
     el.className = 'msg assistant'
-    el.innerHTML = '<div class="role">EasyClaw</div><div class="bubble">…thinking</div>'
+    el.innerHTML = '<div class="role">DUCKi</div><div class="bubble">…thinking</div>'
     $('messages').appendChild(el); scrollDown(); return el
   }
   function addToolCard(tc) {
