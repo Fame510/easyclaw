@@ -37,8 +37,12 @@
   var DEFAULT_MODEL = {
     openai: 'gpt-4o-mini',
     anthropic: 'claude-3-5-sonnet-latest',
-    gemini: 'gemini-1.5-flash',
-    deepseek: 'deepseek-chat'
+    gemini: 'gemini-2.0-flash',
+    deepseek: 'deepseek-chat',
+    glm: 'glm-4-flash',
+    qwen: 'qwen-turbo',
+    kimi: 'moonshot-v1-8k',
+    openrouter: 'deepseek/deepseek-chat-v3-0324:free'
   }
 
   // ----- state -----
@@ -359,7 +363,11 @@
   function callLLM() {
     var p = state.llm.provider
     if (p === 'openai') return callOpenAI('https://api.openai.com/v1')()
-    if (p === 'deepseek') return callOpenAI('https://api.deepseek.com')()
+    if (p === 'deepseek') return callOpenAI('https://api.deepseek.com/v1')()
+    if (p === 'glm') return callOpenAI('https://open.bigmodel.cn/api/paas/v4')()
+    if (p === 'qwen') return callOpenAI('https://dashscope-international.aliyuncs.com/compatible-mode/v1')()
+    if (p === 'kimi') return callOpenAI('https://api.moonshot.cn/v1')()
+    if (p === 'openrouter') return callOpenAI('https://openrouter.ai/api/v1')()
     if (p === 'anthropic') return callAnthropic()
     if (p === 'gemini') return callGemini()
     return Promise.reject(new Error('Unknown provider'))
@@ -546,7 +554,15 @@
         body: JSON.stringify({ model: state.llm.model, max_tokens: 1, messages: [{ role: 'user', content: 'hi' }] })
       }).then(checkJson)
     }
-    var base = p === 'deepseek' ? 'https://api.deepseek.com' : 'https://api.openai.com/v1'
+    var VERIFY_BASE = {
+      openai: 'https://api.openai.com/v1',
+      deepseek: 'https://api.deepseek.com/v1',
+      glm: 'https://open.bigmodel.cn/api/paas/v4',
+      qwen: 'https://dashscope-international.aliyuncs.com/compatible-mode/v1',
+      kimi: 'https://api.moonshot.cn/v1',
+      openrouter: 'https://openrouter.ai/api/v1'
+    }
+    var base = VERIFY_BASE[p] || 'https://api.openai.com/v1'
     return fetch(base + '/models', { headers: { Authorization: 'Bearer ' + state.llm.key } }).then(checkJson)
   }
 
