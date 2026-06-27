@@ -364,19 +364,31 @@
       </p>
 
       <div class="download-area">
-        <a class="btn btn-primary" id="primaryDownload" href="https://github.com/Fame510/easyclaw/releases/latest">
+        <a
+          class="btn btn-primary"
+          id="primaryDownload"
+          href="https://github.com/Fame510/easyclaw/releases/latest/download/EasyClaw.AppImage"
+        >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path
               d="M12 3a1 1 0 0 1 1 1v9.59l3.3-3.3a1 1 0 0 1 1.4 1.42l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V4a1 1 0 0 1 1-1Zm-7 14a1 1 0 0 1 1 1v1h12v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1Z"
             />
           </svg>
-          <span id="primaryLabel">Download for Linux</span>
+          <span id="primaryLabel">Download for Linux (AppImage)</span>
         </a>
-        <span class="btn-version" id="versionLabel">Loading latest release…</span>
+        <span class="btn-version" id="versionLabel">Always serves the latest release</span>
 
         <div class="secondary-links">
-          <a id="appimageLink" href="https://github.com/Fame510/easyclaw/releases/latest">AppImage</a>
-          <a id="snapLink" href="https://github.com/Fame510/easyclaw/releases/latest">Snap (.snap)</a>
+          <a
+            id="appimageLink"
+            href="https://github.com/Fame510/easyclaw/releases/latest/download/EasyClaw.AppImage"
+            >AppImage</a
+          >
+          <a
+            id="snapLink"
+            href="https://github.com/Fame510/easyclaw/releases/latest/download/EasyClaw.snap"
+            >Snap (.snap)</a
+          >
           <a href="https://github.com/Fame510/easyclaw/releases" target="_blank" rel="noopener"
             >All releases</a
           >
@@ -417,10 +429,11 @@
     </footer>
 
     <script>
-      // Pull the latest release from THIS repo so download links always point
-      // at the newest build, regardless of version number.
+      // Download links point at the repo's stable latest/download URLs, so a
+      // click always fetches the newest release with no API dependency.
+      // This only adjusts the platform note based on the visitor's OS, and
+      // tries to show the live version tag as a nicety (best effort).
       var REPO = 'Fame510/easyclaw';
-      var RELEASES = 'https://github.com/' + REPO + '/releases';
 
       function osLabel() {
         var ua = navigator.userAgent;
@@ -431,11 +444,7 @@
       }
 
       (function () {
-        var primary = document.getElementById('primaryDownload');
-        var primaryLabel = document.getElementById('primaryLabel');
         var versionLabel = document.getElementById('versionLabel');
-        var appimageLink = document.getElementById('appimageLink');
-        var snapLink = document.getElementById('snapLink');
         var platformNote = document.getElementById('platformNote');
 
         var detected = osLabel();
@@ -446,6 +455,8 @@
             '</strong>. Linux builds are available now — macOS/Windows builds are produced via the repo\u2019s GitHub Actions release workflow.';
         }
 
+        // Best-effort: show the live version tag. If the API is unavailable
+        // (e.g. rate limited), the static label stays and downloads still work.
         fetch('https://api.github.com/repos/' + REPO + '/releases/latest', {
           headers: { Accept: 'application/vnd.github+json' }
         })
@@ -454,33 +465,12 @@
             return r.json();
           })
           .then(function (rel) {
-            var assets = rel.assets || [];
-            var appimage = assets.filter(function (a) {
-              return /\.AppImage$/i.test(a.name);
-            })[0];
-            var snap = assets.filter(function (a) {
-              return /\.snap$/i.test(a.name);
-            })[0];
-
-            versionLabel.textContent = rel.tag_name
-              ? rel.tag_name + ' • ' + (appimage ? (appimage.size / 1048576).toFixed(0) + ' MB' : '')
-              : 'Latest release';
-
-            if (appimage) {
-              primary.href = appimage.browser_download_url;
-              primaryLabel.textContent = 'Download for Linux (AppImage)';
-              appimageLink.href = appimage.browser_download_url;
-            }
-            if (snap) {
-              snapLink.href = snap.browser_download_url;
+            if (rel && rel.tag_name) {
+              versionLabel.textContent = 'Latest: ' + rel.tag_name;
             }
           })
           .catch(function () {
-            // Fallback: link straight to the releases page.
-            versionLabel.textContent = 'View releases →';
-            primary.href = RELEASES + '/latest';
-            appimageLink.href = RELEASES + '/latest';
-            snapLink.href = RELEASES + '/latest';
+            /* keep the static label; direct download links are unaffected */
           });
       })();
     </script>
