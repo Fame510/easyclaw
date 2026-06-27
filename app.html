@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>DUCKi — Powered by AEON DUX</title>
     <meta name="description" content="DUCKi by AEON DUX — a quantum-infused browser AI agent: bring your own LLM key, connect GitHub, Gmail and Firecrawl, and get things done." />
-    <link
-      rel="icon"
-      type="image/svg+xml"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cpath d='M60 12C32 12 16 35 16 55c0 19 14 38 28 43v10h9V98c3 1 7 2 7 2s4-1 7-2v10h9V98c14-5 28-24 28-43 0-20-16-43-44-43Z' fill='%23f97316'/%3E%3Ccircle cx='45' cy='40' r='7' fill='%23050810'/%3E%3Ccircle cx='75' cy='40' r='7' fill='%23050810'/%3E%3C/svg%3E"
-    />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
     <style>
       :root {
         --primary: #f5a623;
@@ -144,18 +142,7 @@
     <header>
       <div class="brand">
         <button class="menu-btn" id="menuBtn" aria-label="Toggle connections">☰</button>
-        <svg width="26" height="26" viewBox="0 0 120 120" fill="none" aria-hidden="true">
-          <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5a623"/><stop offset="1" stop-color="#c2410c"/></linearGradient></defs>
-          <!-- DUCKi mascot: duck head -->
-          <ellipse cx="60" cy="62" rx="40" ry="38" fill="#1a1a2e"/>
-          <path d="M30 70 C30 88 44 100 60 100 C76 100 90 88 90 70Z" fill="#222447"/>
-          <path d="M88 66 C104 64 112 70 112 74 C112 78 104 82 90 78 Z" fill="url(#g)"/>
-          <circle cx="50" cy="54" r="8" fill="#ffffff"/><circle cx="74" cy="54" r="8" fill="#ffffff"/>
-          <circle cx="51" cy="55" r="4" fill="#0a0a0a"/><circle cx="75" cy="55" r="4" fill="#0a0a0a"/>
-          <circle cx="49" cy="52" r="1.6" fill="#4fc3f7"/><circle cx="73" cy="52" r="1.6" fill="#4fc3f7"/>
-          <path d="M40 30 Q60 18 80 30 L74 40 Q60 33 46 40 Z" fill="#efe7d2"/>
-          <circle cx="60" cy="30" r="4" fill="#f5a623"/>
-        </svg>
+        <img src="ducki_logo.png" width="28" height="28" alt="DUCKi" style="border-radius:50%;display:block;" />
         <span>DUCK<span class="claw">i</span> <span style="font-weight:600;font-size:11px;color:#4fc3f7;letter-spacing:1px;">POWERED BY AEON DUX</span></span>
       </div>
       <a href="./index.html">← Home</a>
@@ -180,6 +167,7 @@
             <option value="qwen">Alibaba Qwen (China)</option>
             <option value="kimi">Moonshot Kimi (China)</option>
             <option value="openrouter">OpenRouter (free open models)</option>
+            <option value="siliconflow">SiliconFlow (China, free models)</option>
           </select>
           <label>Model</label>
           <input id="llmModel" placeholder="model id" />
@@ -249,29 +237,7 @@
         <div class="banner" id="banner" style="display:none"></div>
         <div class="messages" id="messages">
           <div class="empty" id="empty">
-            <svg width="90" height="90" viewBox="0 0 120 120" fill="none" aria-hidden="true">
-              <defs>
-                <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5a623"/><stop offset="1" stop-color="#c2410c"/></linearGradient>
-                <radialGradient id="atom" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#9be7ff"/><stop offset="1" stop-color="#4fc3f7"/></radialGradient>
-              </defs>
-              <!-- turban -->
-              <path d="M34 34 Q60 14 86 34 L80 46 Q60 36 40 46 Z" fill="#efe7d2"/>
-              <circle cx="60" cy="30" r="5" fill="#f5a623"/>
-              <!-- head -->
-              <ellipse cx="60" cy="64" rx="40" ry="38" fill="#1a1a2e"/>
-              <path d="M30 72 C30 90 44 102 60 102 C76 102 90 90 90 72Z" fill="#222447"/>
-              <!-- beak -->
-              <path d="M88 68 C106 65 116 72 116 76 C116 80 106 85 90 80 Z" fill="url(#g2)"/>
-              <!-- glowing glasses -->
-              <circle cx="49" cy="56" r="10" fill="#ffffff"/><circle cx="75" cy="56" r="10" fill="#ffffff"/>
-              <circle cx="49" cy="56" r="6" fill="#0a0a0a"/><circle cx="75" cy="56" r="6" fill="#0a0a0a"/>
-              <circle cx="47" cy="53" r="2.4" fill="#4fc3f7"/><circle cx="73" cy="53" r="2.4" fill="#4fc3f7"/>
-              <line x1="59" y1="56" x2="65" y2="56" stroke="#c9a84c" stroke-width="2"/>
-              <!-- floating atom -->
-              <circle cx="104" cy="30" r="5" fill="url(#atom)"/>
-              <ellipse cx="104" cy="30" rx="11" ry="4.5" fill="none" stroke="#4fc3f7" stroke-width="1.4" transform="rotate(35 104 30)"/>
-              <ellipse cx="104" cy="30" rx="11" ry="4.5" fill="none" stroke="#4fc3f7" stroke-width="1.4" transform="rotate(-35 104 30)"/>
-            </svg>
+            <img src="ducki_logo.png" width="96" height="96" alt="DUCKi" style="border-radius:50%;display:block;margin:0 auto;" />
             <h2 style="margin:14px 0 8px; color:var(--text); font-size:20px;">DUCKi is ready</h2>
             <p>Add an LLM key in the sidebar, then ask DUCKi to get things done. Connect GitHub, Gmail and Firecrawl to give it real tools.</p>
             <div class="examples" id="examples">
