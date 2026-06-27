@@ -1,4 +1,4 @@
-/* EasyClaw Console — a browser-based agent.
+/* DUCKi by AEON DUX — a browser-based agent (formerly EasyClaw Console).
  * Bring-your-own-key. Everything runs client-side; keys live in localStorage
  * and are sent only to the provider you choose. No backend.
  */
