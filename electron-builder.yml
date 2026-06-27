@@ -54,6 +54,12 @@ dmg:
       y: 178
       type: link
       path: /Applications
+linux:
+  category: Utility
+  artifactName: ${productName}.${ext}
+  target:
+    - AppImage
+    - snap
 publish:
   provider: github
   owner: ybgwon96
