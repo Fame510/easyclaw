@@ -29,6 +29,11 @@
 
 ## Changelog (most recent first)
 
+### Session 7 — Branding the rooms
+- Renamed the WebRTC video rooms to **"THE DUCK HOUSE"** and made them visible across the app:
+  prominent gradient pill in the console header, a callout button on the chat welcome screen,
+  and a nav link + hero button on the landing page. room.html title/header/lobby rebranded.
+
 ### Session 6 — Access, memory, smarts, Matrix bg, video rooms
 - **Private repo access FIXED.** `github_list_repos` now calls
   `/user/repos?visibility=all&affiliation=owner,collaborator,organization_member`
@@ -46,7 +51,7 @@
 - **Less robotic / more verbose** — strengthened persona instruction ("not a status terminal").
 - **Floating Matrix rain background** — canvas `#matrixfx` behind chat (gold/cyan),
   respects `prefers-reduced-motion`. Added to both app.html and room.html.
-- **WebRTC video rooms (room.html + rooms.js)** via PeerJS cloud signaling:
+- **THE DUCK HOUSE — WebRTC video rooms (room.html + rooms.js)** via PeerJS cloud signaling:
   - Up to **6 users**, peer-to-peer mesh video/audio.
   - **Anonymous nicknames**, **live presence count**.
   - **Host approval flow**: host's PeerJS id = room code; joiners send `join_request`,
