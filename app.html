@@ -35,7 +35,7 @@
         content: '';
         position: fixed; inset: 0; z-index: -1; pointer-events: none;
         background:
-          radial-gradient(50% 40% at 15% 0%, rgba(249, 115, 22, 0.14), transparent 70%),
+          radial-gradient(50% 40% at 15% 0%, rgba(245, 166, 35, 0.12), transparent 70%),
           radial-gradient(45% 45% at 90% 5%, rgba(56, 189, 248, 0.08), transparent 70%);
       }
       header {
@@ -143,6 +143,7 @@
     </style>
   </head>
   <body>
+    <canvas id="matrixfx" aria-hidden="true" style="position:fixed;inset:0;z-index:-2;pointer-events:none;opacity:0.22;"></canvas>
     <header>
       <div class="brand">
         <button class="menu-btn" id="menuBtn" aria-label="Toggle connections">☰</button>
@@ -261,5 +262,35 @@
 
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="./console.js"></script>
+    <script>
+      (function () {
+        var c = document.getElementById('matrixfx'); if (!c) return;
+        var ctx = c.getContext('2d');
+        var cols, drops, font = 16;
+        var glyphs = 'アァカサタナハマヤラワ0123456789ABCDEFｱｲｳｴｵｶｷｸDUCKi'.split('');
+        function resize() {
+          c.width = window.innerWidth; c.height = window.innerHeight;
+          cols = Math.floor(c.width / font); drops = [];
+          for (var i = 0; i < cols; i++) drops[i] = Math.random() * -50;
+        }
+        function draw() {
+          ctx.fillStyle = 'rgba(8,12,24,0.10)';
+          ctx.fillRect(0, 0, c.width, c.height);
+          ctx.font = font + 'px monospace';
+          for (var i = 0; i < cols; i++) {
+            var ch = glyphs[Math.floor(Math.random() * glyphs.length)];
+            var x = i * font, y = drops[i] * font;
+            // gold leading char, cyan trail
+            ctx.fillStyle = Math.random() > 0.975 ? '#f5a623' : '#4fc3f7';
+            ctx.fillText(ch, x, y);
+            if (y > c.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i] += 0.5;
+          }
+          requestAnimationFrame(draw);
+        }
+        resize(); window.addEventListener('resize', resize);
+        if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) draw();
+      })();
+    </script>
   </body>
 </html>
