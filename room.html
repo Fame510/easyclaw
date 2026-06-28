@@ -51,6 +51,13 @@
     .req{display:flex;align-items:center;gap:8px;margin-top:8px;background:#0a0f1e;border:1px solid var(--border);border-radius:10px;padding:8px 10px}
     .req .nm{flex:1;font-size:14px}
     .req button{padding:6px 10px;font-size:12px}
+    .roster{margin-top:14px;background:#0a0f1e;border:1px solid var(--border);border-radius:12px;padding:10px 12px}
+    .roster-title{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+    .roster-row{display:flex;align-items:center;gap:8px;padding:5px 0}
+    .roster-row .rn{flex:1;font-size:14px}
+    .roster-row .host-badge{color:var(--gold);font-size:10px;border:1px solid var(--gold);border-radius:5px;padding:0 4px}
+    .dot-live{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
+    .rkick{background:rgba(239,68,68,.85);color:#fff;border:none;border-radius:7px;padding:3px 9px;font-size:11px;cursor:pointer}
     .hidden{display:none}
     a.back{color:var(--muted);text-decoration:none;font-size:13px}
     a.back:hover{color:var(--cyan)}
@@ -98,6 +105,7 @@
         <label>Join requests (you are the host)</label>
         <div id="requests"></div>
       </div>
+      <div id="roster" class="roster"></div>
       <div class="grid" id="tiles"></div>
       <div class="hint" id="roomHint"></div>
     </div>
