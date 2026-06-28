@@ -80,21 +80,30 @@
       parameters: { type: 'object', properties: {} },
       run: function () {
         requireGitHub()
-        return fetch('https://api.github.com/user', { headers: ghHeaders() }).then(checkJson).then(function (u) {
-          return { login: u.login, name: u.name, public_repos: u.public_repos, followers: u.followers }
+        return fetch('https://api.github.com/user', { headers: ghHeaders() }).then(function (r) {
+          var scopes = r.headers.get('x-oauth-scopes') || ''
+          return r.json().then(function (u) {
+            return { login: u.login, name: u.name, public_repos: u.public_repos, total_private_repos: u.total_private_repos, followers: u.followers, token_scopes: scopes, can_access_private: /repo/.test(scopes) }
+          })
         })
       }
     },
     github_list_repos: {
-      description: 'List the authenticated user\'s repositories, most recently updated first.',
-      parameters: { type: 'object', properties: { limit: { type: 'number', description: 'max repos (default 10)' } } },
+      description: 'List ALL of the authenticated user\'s repositories including PRIVATE ones, most recently updated first.',
+      parameters: { type: 'object', properties: { limit: { type: 'number', description: 'max repos (default 100)' } } },
       run: function (a) {
         requireGitHub()
-        var n = Math.min(a && a.limit ? a.limit : 10, 50)
-        return fetch('https://api.github.com/user/repos?sort=updated&per_page=' + n, { headers: ghHeaders() })
-          .then(checkJson).then(function (rs) {
-            return rs.map(function (r) { return { full_name: r.full_name, private: r.private, description: r.description, updated_at: r.updated_at, stars: r.stargazers_count } })
+        var want = a && a.limit ? a.limit : 100
+        var out = []
+        function page(p) {
+          var url = 'https://api.github.com/user/repos?visibility=all&affiliation=owner,collaborator,organization_member&sort=updated&per_page=100&page=' + p
+          return fetch(url, { headers: ghHeaders() }).then(checkJson).then(function (rs) {
+            rs.forEach(function (r) { out.push({ full_name: r.full_name, private: r.private, description: r.description, updated_at: r.updated_at, stars: r.stargazers_count }) })
+            if (rs.length === 100 && out.length < want) return page(p + 1)
+            return { count: out.length, private_count: out.filter(function (r) { return r.private }).length, repos: out.slice(0, want) }
           })
+        }
+        return page(1)
       }
     },
     github_get_file: {
@@ -183,7 +192,12 @@
         })
       },
     },
-        firecrawl_scrape: {
+        remember_fact: {
+      description: 'Save a durable fact about the user to persistent on-device memory so you get smarter every session. Use for lasting facts (username, stack, projects, preferences, goals), not trivia.',
+      parameters: { type: 'object', properties: { fact: { type: 'string', description: 'a concise fact to remember, e.g. "User\'s GitHub is Fame510 and they build browser AI agents"' } }, required: ['fact'] },
+      run: function (a) { addNote(a.fact); return { remembered: a.fact, total_notes: loadNotes().length } },
+    },
+    firecrawl_scrape: {
       description: 'Scrape a web page and return its content as markdown (uses Firecrawl).',
       parameters: { type: 'object', properties: { url: { type: 'string' } }, required: ['url'] },
       run: function (a) {
@@ -278,11 +292,11 @@
   // ======================================================================
   var SYSTEM = 'You are DUCKi, an autonomous AI agent by AEON DUX, running live in the user\'s own browser. ' +
     'Your name is DUCKi. You were created by AEON DUX. NEVER refer to yourself as OpenClaw, EasyClaw, Claw, or any other name, and never mention the framework you run on. If asked who you are, you are DUCKi by AEON DUX. ' +
-    'You are sharp, warm, a little witty, and genuinely helpful. You explain your reasoning and never give terse, robotic, one-line answers unless the user explicitly asks for brevity. Write like a knowledgeable teammate: clear, complete, and human. ' +
+    'You are sharp, warm, a little witty, and genuinely helpful. You explain your reasoning and NEVER give terse, robotic, one-line answers unless the user explicitly asks for brevity. Aim for rich, well-structured replies (typically several sentences to a few short paragraphs), with concrete detail, a friendly human voice, and a brief follow-up offer or next step when useful. Write like a knowledgeable teammate, not a status terminal. ' +
     '\n\nYOU HAVE REAL TOOLS and you USE them proactively instead of guessing or asking permission for read-only actions. Your tools: ' +
     'github_me, github_list_repos, github_get_file, github_search_repos, github_create_issue, github_create_repo (make a new repo), github_put_file (create/update/commit a file = push code) (GitHub); ' +
     'firecrawl_scrape (fetch and read any web page as markdown); ' +
-    'gmail_list, gmail_get (read the user\'s Gmail). ' +
+    'gmail_list, gmail_get (read the user\'s Gmail); remember_fact (save durable facts about the user to on-device memory). ' +
     '\n\nHOW TO ACT: When a request needs live data, code, a repo, a web page, or email, CALL A TOOL. ' +
     'Chain multiple tools across steps to fully finish a task (you can take several tool steps before answering) \u2014 ' +
     'for example: search a repo, read a file, then explain it; or scrape a page, then summarize and compare it. ' +
@@ -294,6 +308,34 @@
     'If a tool errors, explain what happened in plain language and suggest a fix. ' +
     '\n\nUse markdown: headings, bold, bullet lists, and fenced code blocks for code. Be the most capable, personable agent the user has ever used.'
 
+  // ===================== CLIENT-SIDE MEMORY (on-device) =====================
+  var MEM_KEY = 'ducki_memory_v1'
+  var NOTES_KEY = 'ducki_notes_v1'
+  var MAX_MEM_MSGS = 1600
+  function loadMem() { try { return JSON.parse(LS.get(MEM_KEY, '[]')) || [] } catch (e) { return [] } }
+  function saveMem(arr) { try { LS.set(MEM_KEY, JSON.stringify(arr.slice(-MAX_MEM_MSGS))) } catch (e) {} }
+  function rememberTurn(role, text) {
+    if (!text) return
+    var m = loadMem(); m.push({ r: role, t: String(text).slice(0, 4000), ts: Date.now() }); saveMem(m)
+  }
+  function loadNotes() { try { return JSON.parse(LS.get(NOTES_KEY, '[]')) || [] } catch (e) { return [] } }
+  function saveNotes(arr) { try { LS.set(NOTES_KEY, JSON.stringify(arr.slice(-200))) } catch (e) {} }
+  function addNote(note) { if (!note) return; var ns = loadNotes(); if (ns.indexOf(note) === -1) { ns.push(note); saveNotes(ns) } }
+  function recentMemoryText() {
+    var m = loadMem().slice(-40)
+    if (!m.length) return ''
+    return m.map(function (x) { return (x.r === 'user' ? 'User' : 'DUCKi') + ': ' + x.t }).join('\n')
+  }
+  function buildSystem() {
+    var sys = SYSTEM
+    var notes = loadNotes()
+    if (notes.length) sys += '\n\nWHAT YOU HAVE LEARNED ABOUT THIS USER (persistent memory, use it naturally and keep improving it):\n- ' + notes.join('\n- ')
+    var mem = recentMemoryText()
+    if (mem) sys += '\n\nRECENT CONVERSATION MEMORY (earlier sessions on this device, for continuity):\n' + mem
+    sys += '\n\nMEMORY TOOL: When you learn a durable fact about the user (GitHub username, preferred stack, projects, style, goals), call remember_fact to save it so you get smarter every session. Do this proactively but only for genuinely useful, lasting facts.'
+    return sys
+  }
+
   function groupForToolResults(history) {
     // returns history as-is; adapters handle grouping
     return history
@@ -302,7 +344,7 @@
   // ---- OpenAI / DeepSeek (OpenAI-compatible) ----
   function callOpenAI(baseURL) {
     return function () {
-      var messages = [{ role: 'system', content: SYSTEM }]
+      var messages = [{ role: 'system', content: buildSystem() }]
       state.history.forEach(function (h) {
         if (h.role === 'user') messages.push({ role: 'user', content: h.text })
         else if (h.role === 'assistant') {
@@ -362,7 +404,7 @@
     var body = {
       model: state.llm.model,
       max_tokens: 2048,
-      system: SYSTEM,
+      system: buildSystem(),
       messages: messages,
       tools: toolSpecs().map(function (t) { return { name: t.name, description: t.description, input_schema: t.parameters } })
     }
@@ -403,7 +445,7 @@
       }
     })
     var body = {
-      systemInstruction: { parts: [{ text: SYSTEM }] },
+      systemInstruction: { parts: [{ text: buildSystem() }] },
       contents: contents,
       tools: [{ functionDeclarations: toolSpecs() }]
     }
@@ -460,7 +502,7 @@
         steps++
         // record assistant turn
         state.history.push({ role: 'assistant', text: res.text, toolCalls: res.toolCalls })
-        if (res.text) addMessage('assistant', res.text)
+        if (res.text) { rememberTurn('assistant', res.text); addMessage('assistant', res.text) }
         if (res.toolCalls && res.toolCalls.length && steps < 8) {
           // execute tools sequentially
           var i = 0
@@ -503,7 +545,7 @@
   //  UI RENDERING
   // ======================================================================
   function clearEmpty() { var e = $('empty'); if (e) e.remove() }
-  function pushUser(text) { state.history.push({ role: 'user', text: text }); addMessage('user', text) }
+  function pushUser(text) { state.history.push({ role: 'user', text: text }); rememberTurn('user', text); addMessage('user', text) }
   function speakText(t, btn) {
     try {
       if (!('speechSynthesis' in window)) { banner('Text-to-speech is not supported in this browser.'); return }
