@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DUCKi Rooms — Live Video by AEON DUX</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+  <meta name="description" content="DUCKi Rooms by AEON DUX — instant private WebRTC video rooms for up to 6, with anonymous nicknames, host controls, and live presence." />
+  <style>
+    :root{--bg:#080c18;--card:#0f1424;--border:#1e2740;--text:#e8edf7;--muted:#8a93a8;--gold:#f5a623;--cyan:#4fc3f7;--danger:#ef4444;--green:#34d399}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    canvas#matrixfx{position:fixed;inset:0;z-index:-2;pointer-events:none;opacity:.18}
+    header{display:flex;align-items:center;gap:10px;padding:12px 18px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(8,12,24,.85);backdrop-filter:blur(6px);z-index:10}
+    header img{border-radius:50%}
+    header .title{font-weight:700}
+    header .sub{font-size:11px;color:var(--cyan);letter-spacing:1px;font-weight:600}
+    .live{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:13px;color:var(--muted)}
+    .pulse{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(52,211,153,.6);animation:p 1.8s infinite}
+    @keyframes p{0%{box-shadow:0 0 0 0 rgba(52,211,153,.5)}70%{box-shadow:0 0 0 9px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+    .wrap{max-width:1100px;margin:0 auto;padding:18px}
+    .lobby{max-width:460px;margin:6vh auto;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:26px}
+    .lobby h1{margin:0 0 4px;font-size:22px}
+    .lobby p{color:var(--muted);margin:0 0 18px;font-size:14px}
+    label{display:block;font-size:12px;color:var(--muted);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.5px}
+    input{width:100%;background:#0a0f1e;border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px 12px;font-size:15px}
+    input:focus{outline:none;border-color:var(--gold)}
+    .row{display:flex;gap:10px}
+    .row>*{flex:1}
+    button{cursor:pointer;border:none;border-radius:10px;padding:11px 14px;font-size:14px;font-weight:600;transition:.15s}
+    .btn-primary{background:var(--gold);color:#1a1a2e}
+    .btn-primary:hover{filter:brightness(1.08)}
+    .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+    .btn-ghost:hover{border-color:var(--cyan)}
+    .btn-danger{background:var(--danger);color:#fff}
+    .muted-btn{background:#1a2235;color:var(--text)}
+    .hint{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.5}
+    .grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin-top:14px}
+    .tile{position:relative;background:#05080f;border:1px solid var(--border);border-radius:14px;overflow:hidden;aspect-ratio:4/3}
+    .tile video{width:100%;height:100%;object-fit:cover;background:#05080f}
+    .tile .name{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.6);padding:3px 9px;border-radius:8px;font-size:12px;display:flex;align-items:center;gap:6px}
+    .tile.you .name{color:var(--gold)}
+    .tile .host-badge{color:var(--gold);font-size:10px;border:1px solid var(--gold);border-radius:5px;padding:0 4px}
+    .tile .kick{position:absolute;top:8px;right:8px;background:rgba(239,68,68,.85);color:#fff;border-radius:8px;padding:3px 8px;font-size:11px;display:none}
+    .tile:hover .kick{display:block}
+    .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+    .roomcode{font-family:monospace;background:#0a0f1e;border:1px dashed var(--gold);padding:6px 12px;border-radius:8px;color:var(--gold);letter-spacing:2px}
+    .toasts{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:50}
+    .toast{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:10px;padding:10px 14px;font-size:13px;max-width:300px}
+    .req{display:flex;align-items:center;gap:8px;margin-top:8px;background:#0a0f1e;border:1px solid var(--border);border-radius:10px;padding:8px 10px}
+    .req .nm{flex:1;font-size:14px}
+    .req button{padding:6px 10px;font-size:12px}
+    .hidden{display:none}
+    a.back{color:var(--muted);text-decoration:none;font-size:13px}
+    a.back:hover{color:var(--cyan)}
+  </style>
+</head>
+<body>
+  <canvas id="matrixfx" aria-hidden="true"></canvas>
+  <header>
+    <img src="ducki_logo.png" width="28" height="28" alt="DUCKi" />
+    <div>
+      <div class="title">DUCKi Rooms</div>
+      <div class="sub">LIVE VIDEO · BY AEON DUX</div>
+    </div>
+    <div class="live"><span class="pulse"></span><span id="liveCount">in lobby</span></div>
+  </header>
+
+  <div class="wrap">
+    <!-- LOBBY -->
+    <div id="lobby" class="lobby">
+      <h1>Join a live room</h1>
+      <p>Up to 6 people, peer-to-peer video. Pick a nickname, then create a room or join with a code.</p>
+      <label>Anonymous nickname</label>
+      <input id="nick" maxlength="20" placeholder="e.g. NightOwl, Maverick…" />
+      <label>Room code (to join an existing room)</label>
+      <div class="row">
+        <input id="roomInput" maxlength="24" placeholder="paste a room code" style="text-transform:uppercase" />
+        <button class="btn-ghost" id="joinBtn" style="flex:0 0 90px">Join</button>
+      </div>
+      <div style="margin-top:18px">
+        <button class="btn-primary" id="createBtn" style="width:100%">Create a new room</button>
+      </div>
+      <div class="hint">Your camera/mic stay on your device and connect directly to others (peer-to-peer). The room creator is the host: they approve who joins and can remove anyone. <br/><a class="back" href="app.html">← Back to DUCKi console</a></div>
+    </div>
+
+    <!-- ROOM -->
+    <div id="room" class="hidden">
+      <div class="bar">
+        <span>Room: <span class="roomcode" id="roomCode">—</span></span>
+        <button class="muted-btn" id="copyCode">Copy invite code</button>
+        <button class="muted-btn" id="micBtn">🎤 Mute</button>
+        <button class="muted-btn" id="camBtn">📷 Camera off</button>
+        <button class="btn-danger" id="leaveBtn" style="margin-left:auto">Leave</button>
+      </div>
+      <div id="hostPanel" class="hidden">
+        <label>Join requests (you are the host)</label>
+        <div id="requests"></div>
+      </div>
+      <div class="grid" id="tiles"></div>
+      <div class="hint" id="roomHint"></div>
+    </div>
+  </div>
+
+  <div class="toasts" id="toasts"></div>
+
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="rooms.js"></script>
+</body>
+</html>
