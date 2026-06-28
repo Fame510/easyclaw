@@ -49,7 +49,13 @@
       .then(function (s) { localStream = s; addTile(myId, myNick, true, isHost); attachStream(myId, s); return s })
   }
   function attachStream(id, stream) {
-    var v = document.querySelector('[data-vid="' + id + '"]'); if (v) { v.srcObject = stream; v.play && v.play().catch(function(){}) }
+    var v = document.querySelector('[data-vid="' + id + '"]')
+    if (!v) { // tile not built yet — create a placeholder tile then retry once
+      var nick = (members[id] && members[id].nick) || 'Guest'
+      addTile(id, nick, id === myId, members[id] && members[id].host)
+      v = document.querySelector('[data-vid="' + id + '"]')
+    }
+    if (v) { v.srcObject = stream; v.play && v.play().catch(function(){}) }
   }
   function addTile(id, nick, you, host) {
     if (document.querySelector('[data-tile="' + id + '"]')) return
@@ -86,13 +92,13 @@
         renderRequests(); toast(d.nick + ' wants to join'); break
       case 'approved': // joiner receives from host
         hostId = d.hostId; members = d.members || {}; members[myId] = { nick: myNick, host: false }
-        enterRoom(); d.peers.forEach(function (p) { if (p !== myId) connectToPeer(p) }); updateLive(); toast('You are in!'); break
+        enterRoom(); d.peers.forEach(function (p) { if (p !== myId) { connectToPeer(p); callPeer(p) } }); updateLive(); toast('You are in!'); break
       case 'rejected':
         toast('Join refused: ' + (d.reason || 'host declined')); cleanup(); showLobby(); break
       case 'roster': // host broadcasts membership changes
         members = d.members || members; syncTiles(); updateLive(); break
       case 'hello': // peer announces nick after mesh connect
-        members[conn.peer] = { nick: d.nick, host: !!d.host }; if (!document.querySelector('[data-tile="'+conn.peer+'"]')) addTile(conn.peer, d.nick, false, !!d.host); updateLive(); break
+        members[conn.peer] = { nick: d.nick, host: !!d.host }; if (!document.querySelector('[data-tile="'+conn.peer+'"]')) addTile(conn.peer, d.nick, false, !!d.host); updateLive(); callPeer(conn.peer); break
       case 'kicked':
         toast('You were removed by the host.'); cleanup(); showLobby(); break
       case 'kick_peer': // host tells everyone to drop someone
@@ -121,8 +127,9 @@
     members[pid] = { nick: p.nick, host: false }
     var peers = Object.keys(members)
     send(p.conn, 'approved', { hostId: myId, members: members, peers: peers })
-    conns[pid] = p.conn
+    conns[pid] = p.conn; wireConn(p.conn)
     delete pending[pid]; renderRequests(); broadcast('roster', { members: members }); syncTiles(); updateLive()
+    callPeer(pid) // host -> joiner media call (this direction was missing)
     toast(p.nick + ' admitted')
   }
   function reject(pid) { var p = pending[pid]; if (p) { send(p.conn, 'rejected', { reason: 'Host declined.' }); delete pending[pid]; renderRequests() } }
@@ -134,13 +141,26 @@
   }
 
   // ---------- mesh ----------
+  // Robust, bidirectional media call: safe to call from either side, dedupes,
+  // and never places a call with a null stream (waits for local media first).
+  function callPeer(pid) {
+    if (pid === myId) return
+    if (!localStream) { // local media not ready yet — retry shortly
+      setTimeout(function () { callPeer(pid) }, 250); return
+    }
+    if (calls[pid]) return // already have a media connection to this peer
+    var call = peer.call(pid, localStream)
+    if (call) {
+      calls[pid] = call
+      call.on('stream', function (rs) { ensureRemote(pid, rs) })
+      call.on('close', function () { delete calls[pid] })
+      call.on('error', function () { delete calls[pid] })
+    }
+  }
   function connectToPeer(pid) {
     if (pid === myId || conns[pid]) return
     var c = peer.connect(pid, { reliable: true })
-    c.on('open', function () { conns[pid] = c; wireConn(c); send(c, 'hello', { nick: myNick, host: isHost }) })
-    // also place a video call
-    var call = peer.call(pid, localStream)
-    if (call) { calls[pid] = call; call.on('stream', function (rs) { ensureRemote(pid, rs) }) }
+    c.on('open', function () { conns[pid] = c; wireConn(c); send(c, 'hello', { nick: myNick, host: isHost }); callPeer(pid) })
   }
   function ensureRemote(pid, stream) {
     var nick = (members[pid] && members[pid].nick) || 'Guest'
@@ -175,7 +195,17 @@
       p.on('open', function (id) { peer = p; myId = id; resolve(id) })
       p.on('error', function (e) { toast('Connection error: ' + (e.type || e.message || 'unknown')); reject(e) })
       p.on('connection', function (conn) { conn.on('open', function () { wireConn(conn) }) }) // incoming data
-      p.on('call', function (call) { call.answer(localStream); calls[call.peer] = call; call.on('stream', function (rs) { ensureRemote(call.peer, rs) }) })
+      p.on('call', function (call) {
+        function doAnswer() {
+          if (!localStream) { setTimeout(doAnswer, 250); return }
+          call.answer(localStream)
+          calls[call.peer] = call
+          call.on('stream', function (rs) { ensureRemote(call.peer, rs) })
+          call.on('close', function () { delete calls[call.peer] })
+          call.on('error', function () { delete calls[call.peer] })
+        }
+        doAnswer()
+      })
     })
   }
 
