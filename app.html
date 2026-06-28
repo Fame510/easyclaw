@@ -176,7 +176,8 @@
             <option value="siliconflow">SiliconFlow (China, free models)</option>
           </select>
           <label>Model</label>
-          <input id="llmModel" placeholder="model id" />
+          <input id="llmModel" list="modelList" placeholder="model id" autocomplete="off" />
+            <datalist id="modelList"></datalist>
           <label>API key</label>
           <input id="llmKey" type="password" placeholder="paste key" autocomplete="off" />
           <button class="primary" id="saveLlm">Save &amp; verify</button>
