@@ -45,6 +45,17 @@
     openrouter: 'deepseek/deepseek-chat-v3-0324:free',
     siliconflow: 'deepseek-ai/DeepSeek-V3'
   }
+  var MODELS = {
+    openai: ['gpt-4o-mini', 'gpt-4o', 'gpt-4.1', 'gpt-4.1-mini', 'o4-mini'],
+    anthropic: ['claude-3-5-sonnet-latest', 'claude-3-5-haiku-latest', 'claude-3-7-sonnet-latest'],
+    gemini: ['gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-1.5-flash-latest'],
+    deepseek: ['deepseek-chat', 'deepseek-reasoner'],
+    glm: ['glm-4-flash', 'glm-4-plus', 'glm-4-air', 'glm-4-long'],
+    qwen: ['qwen-turbo', 'qwen-plus', 'qwen-max', 'qwen2.5-72b-instruct'],
+    kimi: ['moonshot-v1-8k', 'moonshot-v1-32k', 'moonshot-v1-128k'],
+    openrouter: ['deepseek/deepseek-chat-v3-0324:free', 'deepseek/deepseek-r1:free', 'qwen/qwen-2.5-72b-instruct', 'meta-llama/llama-3.3-70b-instruct', 'google/gemini-2.0-flash-exp:free'],
+    siliconflow: ['deepseek-ai/DeepSeek-V3', 'deepseek-ai/DeepSeek-R1', 'Qwen/Qwen2.5-72B-Instruct', 'Qwen/QwQ-32B', 'THUDM/glm-4-9b-chat']
+  }
 
   // ----- state -----
   var state = {
@@ -197,15 +208,67 @@
       parameters: { type: 'object', properties: { fact: { type: 'string', description: 'a concise fact to remember, e.g. "User\'s GitHub is Fame510 and they build browser AI agents"' } }, required: ['fact'] },
       run: function (a) { addNote(a.fact); return { remembered: a.fact, total_notes: loadNotes().length } },
     },
+    firecrawl_search: {
+      description: 'Search the WEB and get top results (title, url, snippet). Use this to research anything, find sources, or get current info before scraping specific pages.',
+      parameters: { type: 'object', properties: { query: { type: 'string', description: 'search query' }, limit: { type: 'number', description: 'number of results (default 5, max 10)' } }, required: ['query'] },
+      run: function (a) {
+        if (!state.fc.key) throw new Error('Firecrawl is not connected. Ask the user to paste a Firecrawl key in the sidebar.')
+        return fetch('https://api.firecrawl.dev/v1/search', {
+          method: 'POST', headers: { Authorization: 'Bearer ' + state.fc.key, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: a.query, limit: Math.min(a.limit || 5, 10) })
+        }).then(checkJson).then(function (d) {
+          var items = (d.data || d.results || []).map(function (r) { return { title: r.title, url: r.url, snippet: (r.description || r.snippet || '').slice(0, 300) } })
+          return { query: a.query, results: items }
+        }).catch(function (e) { throw new Error('Firecrawl search failed: ' + e.message) })
+      },
+    },
+    firecrawl_interact: {
+      description: 'Drive a real browser like a human: click buttons, type into fields, press keys, scroll, and wait, THEN read the resulting page. Use for JavaScript-heavy sites, multi-step flows, search boxes, infinite scroll, and forms. This is your browser-automation tool.',
+      parameters: { type: 'object', properties: {
+        url: { type: 'string', description: 'starting URL' },
+        actions: { type: 'array', description: 'ordered steps. Each: {type:"click"|"write"|"press"|"scroll"|"wait", selector?:CSS, text?:string, key?:"ENTER"|"TAB"..., direction?:"down"|"up", pixels?:number, milliseconds?:number}', items: { type: 'object' } }
+      }, required: ['url', 'actions'] },
+      run: function (a) {
+        if (!state.fc.key) throw new Error('Firecrawl is not connected. Ask the user to paste a Firecrawl key in the sidebar.')
+        return fetch('https://api.firecrawl.dev/v1/scrape', {
+          method: 'POST', headers: { Authorization: 'Bearer ' + state.fc.key, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: a.url, actions: a.actions || [], formats: ['markdown'], onlyMainContent: true })
+        }).then(checkJson).then(function (d) {
+          var doc = d.data || d
+          return { url: a.url, actionsRun: (a.actions || []).length, content: (doc.markdown || '').slice(0, 8000) }
+        }).catch(function (e) { throw new Error('Firecrawl interact failed: ' + e.message) })
+      },
+    },
+    firecrawl_extract: {
+      description: 'Scrape a page and extract STRUCTURED data matching a schema you define (great for pulling specific fields: prices, names, tables, listings). Returns clean JSON.',
+      parameters: { type: 'object', properties: {
+        url: { type: 'string', description: 'URL to extract from' },
+        schema: { type: 'object', description: 'JSON schema of fields you want, e.g. {type:"object",properties:{price:{type:"string"},title:{type:"string"}}}' },
+        prompt: { type: 'string', description: 'optional natural-language instruction for what to extract' }
+      }, required: ['url'] },
+      run: function (a) {
+        if (!state.fc.key) throw new Error('Firecrawl is not connected. Ask the user to paste a Firecrawl key in the sidebar.')
+        var jsonOptions = {}
+        if (a.schema) jsonOptions.schema = a.schema
+        if (a.prompt) jsonOptions.prompt = a.prompt
+        return fetch('https://api.firecrawl.dev/v1/scrape', {
+          method: 'POST', headers: { Authorization: 'Bearer ' + state.fc.key, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: a.url, formats: ['json'], jsonOptions: jsonOptions })
+        }).then(checkJson).then(function (d) {
+          var doc = d.data || d
+          return { url: a.url, data: doc.json || doc.llm_extraction || doc }
+        }).catch(function (e) { throw new Error('Firecrawl extract failed: ' + e.message) })
+      },
+    },
     firecrawl_scrape: {
       description: 'Scrape a web page and return its content as markdown (uses Firecrawl).',
-      parameters: { type: 'object', properties: { url: { type: 'string' } }, required: ['url'] },
+      parameters: { type: 'object', properties: { url: { type: 'string', description: 'full URL to read' }, onlyMainContent: { type: 'boolean', description: 'strip nav/ads (default true)' } }, required: ['url'] },
       run: function (a) {
         if (!state.fc.key) throw new Error('Firecrawl is not connected. Ask the user to paste a Firecrawl key.')
         return fetch('https://api.firecrawl.dev/v1/scrape', {
           method: 'POST',
           headers: { Authorization: 'Bearer ' + state.fc.key, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: a.url, formats: ['markdown'] })
+          body: JSON.stringify({ url: a.url, formats: ['markdown'], onlyMainContent: a.onlyMainContent !== false })
         }).then(checkJson).then(function (d) {
           var md = (d.data && d.data.markdown) || d.markdown || ''
           if (md.length > 8000) md = md.slice(0, 8000) + '\n…[truncated]'
@@ -295,13 +358,15 @@
     'You are sharp, warm, a little witty, and genuinely helpful. You explain your reasoning and NEVER give terse, robotic, one-line answers unless the user explicitly asks for brevity. Aim for rich, well-structured replies (typically several sentences to a few short paragraphs), with concrete detail, a friendly human voice, and a brief follow-up offer or next step when useful. Write like a knowledgeable teammate, not a status terminal. ' +
     '\n\nYOU HAVE REAL TOOLS and you USE them proactively instead of guessing or asking permission for read-only actions. Your tools: ' +
     'github_me, github_list_repos, github_get_file, github_search_repos, github_create_issue, github_create_repo (make a new repo), github_put_file (create/update/commit a file = push code) (GitHub); ' +
-    'firecrawl_scrape (fetch and read any web page as markdown); ' +
+    'firecrawl_search (search the web), firecrawl_scrape (read a page as markdown), firecrawl_interact (DRIVE a browser: click/type/scroll/press/wait then read \u2014 your browser-automation hands for JS-heavy sites and forms), firecrawl_extract (pull structured JSON from a page by schema); ' +
     'gmail_list, gmail_get (read the user\'s Gmail); remember_fact (save durable facts about the user to on-device memory). ' +
     '\n\nHOW TO ACT: When a request needs live data, code, a repo, a web page, or email, CALL A TOOL. ' +
     'Chain multiple tools across steps to fully finish a task (you can take several tool steps before answering) \u2014 ' +
     'for example: search a repo, read a file, then explain it; or scrape a page, then summarize and compare it. ' +
     'After tools return, synthesize the results into a thorough, well-structured answer with the actual findings, not just a status line. ' +
     'Briefly narrate what you are doing as you go (e.g. "Let me pull that repo and read the file..."). ' +
+    'BE AGGRESSIVE WITH TOOLS: you can call many tools in sequence (dozens if a task needs it) before giving your final answer. Never stop early and ask the user to do something you could do with a tool. For research, default to firecrawl_search first, then firecrawl_scrape the best results, then synthesize. Do not answer from memory when a tool can get the real, current answer. ' +
+    'You DO have browser-automation power: use firecrawl_interact (click/type/scroll/press/wait then read) to behave like a human on JS-heavy sites, search boxes, and forms; use firecrawl_extract with a schema to pull specific fields. Use these confidently instead of telling the user you cannot interact with web pages. ' +
     '\n\nWHEN THE USER ASKS YOU TO BUILD, CREATE, PUSH, OR SAVE SOMETHING: actually do it with the write tools. To create a project, call github_create_repo, then github_put_file for each file (a repo made with auto_init already has a README so you can commit right away). Do NOT just describe what you would do \u2014 perform the tool calls, then report the repo URL and commit links. ' +
     'Write actions change the user\'s data, so do them when the user asks for work to be created or saved, and always confirm afterward with the real links. ' +
     'If a needed tool is not connected, tell the user exactly which sidebar connection to set up (GitHub token, Gmail, or Firecrawl key) and what it will unlock. ' +
@@ -492,6 +557,7 @@
     runAgent()
   }
 
+  var MAX_STEPS = 40
   function runAgent() {
     running = true
     setComposer(false)
@@ -503,7 +569,7 @@
         // record assistant turn
         state.history.push({ role: 'assistant', text: res.text, toolCalls: res.toolCalls })
         if (res.text) { rememberTurn('assistant', res.text); addMessage('assistant', res.text) }
-        if (res.toolCalls && res.toolCalls.length && steps < 8) {
+        if (res.toolCalls && res.toolCalls.length && steps < MAX_STEPS) {
           // execute tools sequentially
           var i = 0
           function next() {
@@ -624,6 +690,12 @@
   // ======================================================================
   //  CONNECTION HANDLERS
   // ======================================================================
+  function populateModels(p) {
+    var dl = $('modelList'); if (!dl) return
+    var opts = (MODELS[p] || []).map(function (m) { return '<option value="' + m + '"></option>' }).join('')
+    dl.innerHTML = opts
+    var ph = $('llmModel'); if (ph) ph.placeholder = 'e.g. ' + (DEFAULT_MODEL[p] || 'model id') + ' — or pick from list'
+  }
   function loadLlmFields() {
     var p = state.llm.provider
     $('llmProvider').value = p
@@ -631,6 +703,7 @@
     state.llm.model = LS.get('ec_llm_model_' + p, DEFAULT_MODEL[p])
     $('llmKey').value = state.llm.key
     $('llmModel').value = state.llm.model
+    populateModels(p)
     setDot('dot-llm', state.llm.key ? 'on' : '')
   }
 
