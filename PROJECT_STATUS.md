@@ -29,6 +29,28 @@
 
 ## Changelog (most recent first)
 
+### Session 8 — Power, logic, automation, and the backend blueprint
+- **Agent loop cap raised 8 → 40** (MAX_STEPS) so DUCKi chains many tools without stopping early.
+- **Aggressive tool-use directives** added to the system prompt (don't stop early, chain freely, research-first).
+- **Model picker fixed ("locked into 1 model")**: added MODELS preset map per provider + a UI `<datalist>`
+  on the model input — pick a curated model OR type any custom id, for every provider incl. SiliconFlow/OpenRouter.
+- **Firecrawl massively upgraded** (it was barely used): added
+  - `firecrawl_search` — real web search.
+  - `firecrawl_interact` — DRIVE a browser (click/type/scroll/press/wait then read) via Firecrawl `actions`.
+    This is our clever "Playwright-in-a-static-page": real DOM interaction with no backend.
+  - `firecrawl_extract` — structured JSON extraction by schema.
+  - Prompt now tells DUCKi it HAS browser-automation power and to use it confidently.
+- **The Duck House reliability**: added free **TURN servers** (OpenRelay) to the PeerJS ICE config so
+  calls connect across strict firewalls, not just STUN.
+- **Room presence/invite fix**: added a visible **roster panel** (who's in the house, host badge,
+  remove buttons) so the host can see and moderate everyone — fixes "can't see users to invite".
+- **NEW: HOW_TO_BUILD_AS_APP.md** — full meta-systems blueprint for the real backend version
+  (durable 100-tool agentic loop, Playwright browser pool, LLM router, secrets vault, production WebRTC/SFU,
+  migration path). Documents honestly what needs a backend vs what we faked cleverly client-side.
+
+> Honest note carried forward: true Playwright/Selenium control of the USER's authenticated browser and
+> shared terminals require a backend (see blueprint). `firecrawl_interact` is the closest static-site equivalent.
+
 ### Session 7 — Branding the rooms
 - Renamed the WebRTC video rooms to **"THE DUCK HOUSE"** and made them visible across the app:
   prominent gradient pill in the console header, a callout button on the chat welcome screen,
