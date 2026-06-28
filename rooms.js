@@ -23,6 +23,24 @@
   function updateLive() {
     var n = Object.keys(members).length
     $('liveCount').textContent = n + (n === 1 ? ' person live' : ' people live') + ' / ' + MAX
+    renderRoster()
+  }
+  function renderRoster() {
+    var box = document.getElementById('roster'); if (!box) return
+    var ids = Object.keys(members)
+    box.innerHTML = '<div class="roster-title">In the house (' + ids.length + '/' + MAX + ')</div>' +
+      ids.map(function (id) {
+        var m = members[id]
+        return '<div class="roster-row">' +
+          '<span class="dot-live"></span>' +
+          '<span class="rn">' + escapeHtml(m.nick) + (id === myId ? ' (you)' : '') + '</span>' +
+          (m.host ? '<span class="host-badge">HOST</span>' : '') +
+          ((isHost && id !== myId) ? '<button class="rkick" data-rk="' + id + '">remove</button>' : '') +
+          '</div>'
+      }).join('')
+    Array.prototype.forEach.call(box.querySelectorAll('[data-rk]'), function (b) {
+      b.addEventListener('click', function () { kick(b.getAttribute('data-rk')) })
+    })
   }
 
   // ---------- media ----------
@@ -144,7 +162,16 @@
   // ---------- lifecycle ----------
   function makePeer() {
     return new Promise(function (resolve, reject) {
-      var p = new Peer(isHost ? ('DUCKI-' + rand(6)) : undefined)
+      var ICE = {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:global.stun.twilio.com:3478' },
+          { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+          { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+          { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+        ]
+      }
+      var p = new Peer(isHost ? ('DUCKI-' + rand(6)) : undefined, { config: ICE })
       p.on('open', function (id) { peer = p; myId = id; resolve(id) })
       p.on('error', function (e) { toast('Connection error: ' + (e.type || e.message || 'unknown')); reject(e) })
       p.on('connection', function (conn) { conn.on('open', function () { wireConn(conn) }) }) // incoming data
