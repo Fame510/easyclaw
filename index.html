@@ -3,15 +3,15 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>DUCKi — Powered by AEON DUX | Your Own AI Agent</title>
+    <title>DUCKi â Powered by AEON DUX | Your Own AI Agent</title>
     <meta
       name="description"
-      content="DUCKi by AEON DUX — a quantum-infused, one-click installer for your own AI agent. Download, install, and chat with your own AI on Telegram."
+      content="DUCKi by AEON DUX â a quantum-infused, one-click installer for your own AI agent. Download, install, and chat with your own AI on Telegram."
     />
-    <meta property="og:title" content="DUCKi — Powered by AEON DUX | Your Own AI Agent" />
+    <meta property="og:title" content="DUCKi â Powered by AEON DUX | Your Own AI Agent" />
     <meta
       property="og:description"
-      content="DUCKi by AEON DUX — one-click installer for your own AI agent."
+      content="DUCKi by AEON DUX â one-click installer for your own AI agent."
     />
     <meta property="og:type" content="website" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
@@ -285,6 +285,57 @@
         border-radius: 999px;
         border: 1px solid rgba(52, 211, 153, 0.25);
       }
+    
+      /* ===== DUCKi Jarvis Mode ===== */
+      .jarvis-nav{color:#1a0d02!important;background:linear-gradient(90deg,var(--primary),var(--primary-light));padding:7px 14px;border-radius:999px;font-weight:800!important;box-shadow:0 4px 16px rgba(245,166,35,.35)}
+      #jarvisOverlay{position:fixed;inset:0;z-index:9999;background:rgba(5,8,16,.92);backdrop-filter:blur(14px);display:none;overflow-y:auto}
+      #jarvisOverlay.open{display:block}
+      .jv-wrap{max-width:820px;margin:0 auto;padding:22px 18px 90px;display:flex;flex-direction:column;min-height:100vh}
+      .jv-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+      .jv-title{font-weight:800;font-size:18px;display:flex;align-items:center;gap:8px}
+      .jv-x{background:var(--bg-card);border:1px solid var(--border);color:var(--text);border-radius:999px;padding:8px 15px;cursor:pointer;font-weight:700}
+      .jv-x:hover{background:rgba(255,255,255,.09)}
+      .jv-stage{display:flex;flex-direction:column;align-items:center;gap:14px;margin:14px 0}
+      .jv-orbwrap{position:relative;width:200px;height:200px;display:grid;place-items:center}
+      .jv-orb{width:140px;height:140px;border-radius:50%;cursor:pointer;position:relative;
+        background:radial-gradient(circle at 35% 30%,#ffd47e,var(--primary) 45%,#a86a08 100%);
+        box-shadow:0 0 60px rgba(245,166,35,.4),inset 0 0 40px rgba(0,0,0,.35);transition:transform .3s,box-shadow .3s}
+      .jv-orb:active{transform:scale(.96)}
+      .jv-face{position:absolute;inset:0;display:grid;place-items:center;font-size:50px}
+      .jv-pulse{position:absolute;width:140px;height:140px;border-radius:50%;border:2px solid var(--primary);opacity:0;pointer-events:none}
+      #jarvisOverlay[data-state="listening"] .jv-pulse{animation:jvpulse 1.6s ease-out infinite}
+      #jarvisOverlay[data-state="listening"] .jv-orb{background:radial-gradient(circle at 35% 30%,#9be7ff,var(--primary-light) 45%,#0e7490 100%);box-shadow:0 0 80px rgba(79,195,247,.5),inset 0 0 40px rgba(0,0,0,.35)}
+      #jarvisOverlay[data-state="thinking"] .jv-orb{animation:jvspin 3s linear infinite}
+      #jarvisOverlay[data-state="speaking"] .jv-orb{animation:jvbreathe 1.1s ease-in-out infinite}
+      @keyframes jvpulse{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.7);opacity:0}}
+      @keyframes jvspin{100%{transform:rotate(360deg)}}
+      @keyframes jvbreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+      .jv-pill{text-transform:uppercase;letter-spacing:3px;font-size:13px;font-weight:700;color:var(--text-muted)}
+      #jarvisOverlay[data-state="listening"] .jv-pill{color:var(--primary-light)}
+      #jarvisOverlay[data-state="speaking"] .jv-pill{color:var(--primary)}
+      .jv-hint{font-size:13px;color:var(--text-muted);text-align:center}
+      .jv-hint kbd{background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:2px 7px}
+      .jv-controls{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-top:4px}
+      .jv-btn{font-weight:700;font-size:14px;border:none;cursor:pointer;padding:11px 18px;border-radius:999px;color:#1a0d02;background:linear-gradient(90deg,var(--primary),var(--primary-light))}
+      .jv-btn.ghost{background:var(--bg-card);border:1px solid var(--border);color:var(--text)}
+      .jv-note{font-size:12px;color:#fbbf24;text-align:center;margin-top:8px;min-height:15px}
+      .jv-panel{margin-top:18px;background:var(--bg-card);border:1px solid var(--border);border-radius:18px;padding:14px}
+      .jv-panel h3{font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);margin:0 0 10px;display:flex;justify-content:space-between;align-items:center}
+      .jv-log{display:flex;flex-direction:column;gap:9px;max-height:300px;overflow-y:auto}
+      .jv-msg{padding:9px 13px;border-radius:13px;max-width:86%;line-height:1.5;font-size:14px;white-space:pre-wrap;word-wrap:break-word}
+      .jv-msg.user{align-self:flex-end;background:rgba(79,195,247,.14);border:1px solid rgba(79,195,247,.3)}
+      .jv-msg.assistant{align-self:flex-start;background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.3)}
+      .jv-msg.system{align-self:center;background:rgba(255,255,255,.05);color:var(--text-muted);font-size:12.5px;border:1px dashed var(--border)}
+      .jv-who{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;opacity:.7;margin-bottom:3px;display:block}
+      .jv-composer{display:flex;gap:8px;margin-top:11px}
+      .jv-composer input{flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:11px;color:var(--text);padding:11px 13px;font-size:14px}
+      .jv-composer input:focus{outline:none;border-color:var(--primary)}
+      .jv-set{margin-top:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:4px 14px}
+      .jv-set summary{cursor:pointer;padding:10px 0;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted)}
+      .jv-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--border);flex-wrap:wrap}
+      .jv-row .d{font-size:12px;color:var(--text-muted)}
+      .jv-set select,.jv-set input[type=text]{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:7px 9px}
+      .jv-set input[type=range]{accent-color:var(--primary)}
     </style>
   </head>
   <body>
@@ -297,9 +348,10 @@
       </div>
       <div style="display:flex; gap:18px; align-items:center">
         <a class="nav-link" href="./app.html">Console</a>
-        <a class="nav-link" href="./room.html" style="color:#4fc3f7;font-weight:700;">📹 The Duck House</a>
+        <a class="nav-link" href="./room.html" style="color:#4fc3f7;font-weight:700;">ð¹ The Duck House</a>
+        <a class="nav-link jarvis-nav" href="#jarvis" id="jarvisNavBtn">🎙️ Jarvis</a>
         <a class="nav-link" href="https://github.com/Fame510/easyclaw" target="_blank" rel="noopener"
-          >GitHub ↗</a
+          >GitHub â</a
         >
       </div>
     </nav>
@@ -309,15 +361,16 @@
         <img src="ducki_logo.png" width="150" height="150" alt="DUCKi mascot" style="border-radius:50%;display:block;margin:0 auto;box-shadow:0 8px 30px rgba(0,0,0,.35);" />
       </div>
 
-      <span class="badge" id="liveBadge">● Self-hosted • your repo, your releases</span>
+      <span class="badge" id="liveBadge">â Self-hosted â¢ your repo, your releases</span>
 
       <h1>Your Own AI Agent,<br /><span class="claw">One Click Away</span></h1>
       <p class="tagline">
-        DUCKi by AEON DUX installs your own AI agent for you — then you chat with your own AI on Telegram.
+        DUCKi by AEON DUX installs your own AI agent for you â then you chat with your own AI on Telegram.
       </p>
 
       <div class="download-area">
-        <a class="btn btn-primary" href="./room.html" style="background:linear-gradient(90deg,#f5a623,#4fc3f7);color:#1a1a2e;margin-bottom:10px;">📹 Enter THE DUCK HOUSE <span style="font-size:11px;background:#ef4444;color:#fff;border-radius:6px;padding:1px 6px;margin-left:4px;">LIVE</span></a>
+        <a class="btn btn-primary" href="./room.html" style="background:linear-gradient(90deg,#f5a623,#4fc3f7);color:#1a1a2e;margin-bottom:10px;">ð¹ Enter THE DUCK HOUSE <span style="font-size:11px;background:#ef4444;color:#fff;border-radius:6px;padding:1px 6px;margin-left:4px;">LIVE</span></a>
+      <a class="btn btn-primary" href="#jarvis" id="jarvisHeroBtn" style="background:linear-gradient(90deg,#8b5cf6,#4fc3f7);color:#0b0410;margin-bottom:10px;">🎙️ Talk to DUCKi (Jarvis Mode)</a>
       <a class="btn btn-primary" id="launchConsole" href="./app.html">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm2 5 3 3-3 3M11 15h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -330,9 +383,9 @@
           style="color: var(--text-muted); text-decoration: none"
           href="https://github.com/Fame510/easyclaw/releases/latest/download/EasyClaw.AppImage"
         >
-          ↓ Or download the Linux desktop app (AppImage)
+          â Or download the Linux desktop app (AppImage)
         </a>
-        <span class="btn-version" id="versionLabel">Bring your own LLM key • connect GitHub, Gmail, Firecrawl</span>
+        <span class="btn-version" id="versionLabel">Bring your own LLM key â¢ connect GitHub, Gmail, Firecrawl</span>
 
         <div class="secondary-links">
           <a
@@ -378,7 +431,7 @@
 
     <footer>
       <p>
-        DUCKi by AEON DUX — one-click installer for the
+        DUCKi by AEON DUX â one-click installer for the
         <a href="https://github.com/Fame510/easyclaw" target="_blank" rel="noopener">OpenClaw</a>
         AI agent. MIT licensed. Hosted on GitHub Pages, fully under your control.
       </p>
@@ -408,7 +461,7 @@
           platformNote.innerHTML =
             'Detected <strong>' +
             detected +
-            '</strong>. Linux builds are available now — macOS/Windows builds are produced via the repo\u2019s GitHub Actions release workflow.';
+            '</strong>. Linux builds are available now â macOS/Windows builds are produced via the repo\u2019s GitHub Actions release workflow.';
         }
 
         // Best-effort: show the live version tag. If the API is unavailable
@@ -429,6 +482,166 @@
             /* keep the static label; direct download links are unaffected */
           });
       })();
+    </script>
+  
+    <!-- ===== DUCKi Jarvis Mode overlay ===== -->
+    <div id="jarvisOverlay" data-state="idle" role="dialog" aria-label="DUCKi Jarvis Mode">
+      <div class="jv-wrap">
+        <div class="jv-top">
+          <div class="jv-title">🎙️ DUCK<span class="claw">i</span> Jarvis Mode</div>
+          <button class="jv-x" id="jvClose">Close ✕</button>
+        </div>
+        <p class="jv-hint" style="margin-bottom:4px">Fully on-device — wake word, speech, an in-browser AI, and voice. No backend, no API keys.</p>
+        <div class="jv-stage">
+          <div class="jv-orbwrap"><div class="jv-pulse"></div><div class="jv-orb" id="jvOrb" title="Tap to talk"><div class="jv-face">🦆</div></div></div>
+          <div class="jv-pill" id="jvState">Idle</div>
+          <div class="jv-hint">Tap the orb or say <kbd>Hey DUCKi</kbd> (wake word on) — or just type below.</div>
+        </div>
+        <div class="jv-controls">
+          <button class="jv-btn" id="jvTalk">🎙️ Tap to talk</button>
+          <button class="jv-btn ghost" id="jvWake">👂 Wake word: Off</button>
+          <button class="jv-btn ghost" id="jvLoadLLM">🧠 Load local AI</button>
+          <button class="jv-btn ghost" id="jvStop">⏹ Stop</button>
+        </div>
+        <div class="jv-note" id="jvNote"></div>
+        <div class="jv-panel">
+          <h3>Conversation <button class="jv-btn ghost" id="jvClear" style="padding:4px 11px;font-size:11px">Clear memory</button></h3>
+          <div class="jv-log" id="jvLog"></div>
+          <div class="jv-composer"><input id="jvText" type="text" placeholder="Type a message to DUCKi…" autocomplete="off" /><button class="jv-btn" id="jvSend">Send</button></div>
+        </div>
+        <details class="jv-set">
+          <summary>⚙️ Settings</summary>
+          <div class="jv-row"><div><label>AI brain</label><div class="d">Local model runs 100% in-browser. Smart reply is instant with no download.</div></div>
+            <select id="jvBrain"><option value="fallback">Smart reply (instant)</option><option value="llm">Local LLM (Qwen2.5-0.5B ~400MB)</option></select></div>
+          <div class="jv-row"><div><label>Voice</label></div><select id="jvVoice"></select></div>
+          <div class="jv-row"><div><label>Speech rate</label></div><input type="range" id="jvRate" min="0.7" max="1.4" step="0.05" value="1"></div>
+          <div class="jv-row"><div><label>Pitch</label></div><input type="range" id="jvPitch" min="0.6" max="1.3" step="0.05" value="0.95"></div>
+          <div class="jv-row"><div><label>Speak aloud</label></div><label><input type="checkbox" id="jvTts" checked> on</label></div>
+          <div class="jv-row"><div><label>Your name</label><div class="d">DUCKi will address you by this.</div></div><input type="text" id="jvName" placeholder="optional"></div>
+        </details>
+      </div>
+    </div>
+
+    <script>
+    (function(){
+      var CFG={WAKE:['hey ducki','hey duckie','hey ducky','hey dookie','ducki','okay ducki'],
+        PERS:"You are DUCKi, an autonomous AI agent created by Aeon Dux. You speak with calm confidence, dry wit, and concise precision. Keep replies short unless asked for detail. Never say you are a language model.",
+        MODEL:'onnx-community/Qwen2.5-0.5B-Instruct',MAX:20,DB:'ducki-jarvis',STORE:'memory'};
+      var $=function(id){return document.getElementById(id);};
+      var ov=$('jarvisOverlay');
+      function setState(s){ov.dataset.state=s;$('jvState').textContent=s.charAt(0).toUpperCase()+s.slice(1);}
+      function note(t,to){$('jvNote').textContent=t||'';if(t&&to!==0){setTimeout(function(){if($('jvNote').textContent===t)$('jvNote').textContent='';},to||4500);}}
+
+      /* Memory */
+      var db=null;
+      function dbOpen(){return new Promise(function(res){var r=indexedDB.open(CFG.DB,1);
+        r.onupgradeneeded=function(e){var d=e.target.result;if(!d.objectStoreNames.contains(CFG.STORE))d.createObjectStore(CFG.STORE,{keyPath:'id',autoIncrement:true});};
+        r.onsuccess=function(e){db=e.target.result;res();};r.onerror=function(){res();};});}
+      function memAdd(role,content){if(!db)return;var tx=db.transaction(CFG.STORE,'readwrite');tx.objectStore(CFG.STORE).add({role:role,content:content,ts:Date.now()});}
+      function memAll(){return new Promise(function(res){if(!db)return res([]);var tx=db.transaction(CFG.STORE,'readonly');var rq=tx.objectStore(CFG.STORE).getAll();rq.onsuccess=function(){res(rq.result||[]);};rq.onerror=function(){res([]);};});}
+      function memClear(){return new Promise(function(res){if(!db)return res();var tx=db.transaction(CFG.STORE,'readwrite');tx.objectStore(CFG.STORE).clear().onsuccess=function(){res();};});}
+
+      function bubble(role,content){var d=document.createElement('div');d.className='jv-msg '+role;
+        var who=role==='user'?'You':role==='assistant'?'DUCKi':'System';
+        var s=document.createElement('span');s.className='jv-who';s.textContent=who;d.appendChild(s);
+        d.appendChild(document.createTextNode(content));$('jvLog').appendChild(d);$('jvLog').scrollTop=$('jvLog').scrollHeight;}
+
+      /* TTS */
+      var voices=[];
+      function ttsInit(){var load=function(){voices=speechSynthesis.getVoices();var sel=$('jvVoice');sel.innerHTML='';
+        voices.forEach(function(v,i){var o=document.createElement('option');o.value=i;o.textContent=v.name+' ('+v.lang+')';sel.appendChild(o);});
+        var p=voices.findIndex(function(v){return /en[-_]?US/i.test(v.lang)&&/female|samantha|google|zira|aria|jenny/i.test(v.name);});if(p>=0)sel.value=p;};
+        load();if(typeof speechSynthesis!=='undefined'&&speechSynthesis.onvoiceschanged!==undefined)speechSynthesis.onvoiceschanged=load;}
+      function speak(text){return new Promise(function(res){if(!$('jvTts').checked||!('speechSynthesis'in window)){res();return;}
+        speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);var v=voices[+$('jvVoice').value];if(v)u.voice=v;
+        u.rate=+$('jvRate').value;u.pitch=+$('jvPitch').value;u.onend=res;u.onerror=res;setState('speaking');speechSynthesis.speak(u);});}
+      function ttsStop(){if('speechSynthesis'in window)speechSynthesis.cancel();}
+
+      /* Fallback brain */
+      function fb(text){var t=text.toLowerCase().trim();var name=$('jvName').value.trim();var hi=name?(', '+name):'';
+        if(/^(hi|hey|hello|yo|sup|hola)\b/.test(t))return"Hey"+hi+". DUCKi here. What do you need?";
+        if(/how are you|how's it going/.test(t))return"Running clean and fully on-device. What can I do for you?";
+        if(/your name|who are you|what are you/.test(t))return"I'm DUCKi, your on-device agent built by Aeon Dux. Everything runs right here in your browser.";
+        if(/who (made|built|created) you|aeon dux/.test(t))return"I was created by Aeon Dux. I run 100% client-side \u2014 no servers, no API keys.";
+        if(/what (can|do) you do|help|capabilities/.test(t))return"I listen for a wake word, transcribe your speech, think, and talk back. Load the local AI in settings for smarter replies, or keep me in fast mode.";
+        if(/\btime\b/.test(t))return"It's "+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+"."+hi;
+        if(/\bdate\b|what day/.test(t))return"Today is "+new Date().toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'})+".";
+        if(/thank/.test(t))return"Anytime"+hi+".";
+        if(/joke/.test(t))return"Why did the duck get an AI? So it could finally understand its own quack.";
+        if(/bye|goodbye|see you|later/.test(t))return"Standing by"+hi+". Say 'Hey DUCKi' whenever you need me.";
+        if(/\?$/.test(t))return"Good question. Load the local AI brain in settings and I can reason through that fully offline.";
+        return"Got it"+hi+". I'm in fast mode \u2014 flip on the local AI in settings for a full answer. What else?";}
+
+      /* LLM brain */
+      var gen=null,llmLoading=false,device='wasm';
+      function llmLoad(){if(gen)return Promise.resolve(gen);if(llmLoading)return Promise.resolve(null);
+        llmLoading=true;setState('thinking');note('Loading local AI\u2026 first load downloads the model, then it caches.',0);
+        return import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2').then(function(T){
+          return (navigator.gpu?navigator.gpu.requestAdapter().then(function(a){if(a)device='webgpu';}).catch(function(){}):Promise.resolve()).then(function(){
+            return T.pipeline('text-generation',CFG.MODEL,{dtype:'q4',device:device,progress_callback:function(p){if(p.status==='progress'&&p.progress)note('Downloading model: '+Math.round(p.progress)+'%',0);}});});
+        }).then(function(g){gen=g;$('jvLLMmode')&&($('jvLLMmode').textContent='Qwen2.5-0.5B');note('Local AI ready ('+device+').');return g;})
+        .catch(function(e){console.error(e);note('Local AI failed to load \u2014 staying in fast mode.',7000);$('jvBrain').value='fallback';return null;})
+        .then(function(g){llmLoading=false;setState('idle');return g;});}
+      function llmReply(text,history){return llmLoad().then(function(g){if(!g)return fb(text);
+        var name=$('jvName').value.trim();var sys=CFG.PERS+(name?(" The user's name is "+name+"."):"");
+        var msgs=[{role:'system',content:sys}];history.slice(-CFG.MAX).forEach(function(m){msgs.push({role:m.role,content:m.content});});msgs.push({role:'user',content:text});
+        setState('thinking');
+        return g(msgs,{max_new_tokens:200,temperature:0.7,do_sample:true}).then(function(out){var r=out[0].generated_text;
+          if(Array.isArray(r))r=r[r.length-1].content;else if(typeof r==='string'){var p=r.split('assistant');r=(p[p.length-1]||r).trim();}
+          return (r||'').trim()||fb(text);});});}
+
+      /* Speech recognition */
+      var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+      var wakeOn=false,listening=false,wakeRecog=null;
+      function captureCmd(){if(!SR){note('Speech recognition not supported here \u2014 type instead.');return;}if(listening)return;
+        listening=true;setState('listening');var r=new SR();r.lang='en-US';r.interimResults=false;r.maxAlternatives=1;r.continuous=false;
+        r.onresult=function(e){var txt=e.results[0][0].transcript.trim();listening=false;if(txt)handleInput(txt);else setState('idle');};
+        r.onerror=function(e){listening=false;setState('idle');if(e.error==='not-allowed')note('Microphone blocked. Allow mic access to talk.');};
+        r.onend=function(){listening=false;if(ov.dataset.state==='listening')setState('idle');if(wakeOn)startWake();};
+        try{r.start();}catch(x){listening=false;}}
+      function startWake(){if(!SR||!wakeOn||listening)return;stopWake();wakeRecog=new SR();wakeRecog.lang='en-US';wakeRecog.continuous=true;wakeRecog.interimResults=true;
+        wakeRecog.onresult=function(e){for(var i=e.resultIndex;i<e.results.length;i++){var s=e.results[i][0].transcript.toLowerCase();
+          if(CFG.WAKE.some(function(w){return s.indexOf(w)>=0;})){stopWake();ttsStop();note('Wake word detected.',1500);captureCmd();break;}}};
+        wakeRecog.onerror=function(e){if(e.error==='not-allowed'){wakeOn=false;$('jvWake').textContent='\uD83D\uDC42 Wake word: Off';note('Mic blocked \u2014 wake word off.');}};
+        wakeRecog.onend=function(){if(wakeOn&&!listening)setTimeout(startWake,400);};try{wakeRecog.start();}catch(x){}}
+      function stopWake(){if(wakeRecog){try{wakeRecog.onend=null;wakeRecog.stop();}catch(x){}wakeRecog=null;}}
+
+      function handleInput(text){bubble('user',text);memAdd('user',text);setState('thinking');
+        memAll().then(function(history){return $('jvBrain').value==='llm'?llmReply(text,history):Promise.resolve(fb(text));})
+        .catch(function(){return fb(text);}).then(function(reply){bubble('assistant',reply);memAdd('assistant',reply);
+          return speak(reply);}).then(function(){setState('idle');if(wakeOn)startWake();});}
+
+      /* Open/close */
+      function openJarvis(e){if(e)e.preventDefault();ov.classList.add('open');document.body.style.overflow='hidden';}
+      function closeJarvis(){ov.classList.remove('open');document.body.style.overflow='';ttsStop();stopWake();listening=false;setState('idle');}
+      $('jarvisNavBtn')&&($('jarvisNavBtn').onclick=openJarvis);
+      $('jarvisHeroBtn')&&($('jarvisHeroBtn').onclick=openJarvis);
+      if(location.hash==='#jarvis')setTimeout(openJarvis,300);
+      $('jvClose').onclick=closeJarvis;
+      document.addEventListener('keydown',function(e){if(e.key==='Escape'&&ov.classList.contains('open'))closeJarvis();});
+
+      /* Wire controls */
+      $('jvOrb').onclick=function(){ttsStop();captureCmd();};
+      $('jvTalk').onclick=function(){ttsStop();captureCmd();};
+      $('jvStop').onclick=function(){ttsStop();stopWake();listening=false;if(wakeOn)startWake();setState('idle');};
+      $('jvWake').onclick=function(){wakeOn=!wakeOn;$('jvWake').textContent='\uD83D\uDC42 Wake word: '+(wakeOn?'On':'Off');if(wakeOn){note('Listening for "Hey DUCKi"\u2026');startWake();}else{stopWake();}};
+      $('jvLoadLLM').onclick=function(){$('jvBrain').value='llm';llmLoad();};
+      $('jvBrain').onchange=function(){if($('jvBrain').value==='llm')llmLoad();};
+      $('jvSend').onclick=function(){var t=$('jvText').value.trim();if(t){$('jvText').value='';handleInput(t);}};
+      $('jvText').onkeydown=function(e){if(e.key==='Enter'){var t=$('jvText').value.trim();if(t){$('jvText').value='';handleInput(t);}}};
+      $('jvClear').onclick=function(){memClear().then(function(){$('jvLog').innerHTML='';bubble('system','Memory cleared.');});};
+
+      /* Persist settings */
+      ['jvRate','jvPitch'].forEach(function(k){var v=localStorage.getItem('ducki_'+k);if(v)$(k).value=v;$(k).oninput=function(){localStorage.setItem('ducki_'+k,$(k).value);};});
+      $('jvName').value=localStorage.getItem('ducki_name')||'';$('jvName').oninput=function(){localStorage.setItem('ducki_name',$('jvName').value);};
+      $('jvTts').checked=localStorage.getItem('ducki_tts')!=='0';$('jvTts').onchange=function(){localStorage.setItem('ducki_tts',$('jvTts').checked?'1':'0');};
+
+      /* Boot */
+      if(!SR)note('Tip: this browser has no speech recognition \u2014 you can still type to DUCKi.',6000);
+      ttsInit();
+      dbOpen().then(memAll).then(function(hist){if(hist&&hist.length){hist.slice(-12).forEach(function(m){bubble(m.role,m.content);});}
+        else{bubble('system','DUCKi Jarvis Mode online. Tap the orb, enable the wake word, or type. Load the local AI in settings for full reasoning \u2014 everything runs on your device.');}setState('idle');});
+    })();
     </script>
   </body>
 </html>
