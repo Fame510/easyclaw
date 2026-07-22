@@ -29,6 +29,16 @@
 
 ## Changelog (most recent first)
 
+### Session 9 — Full code audit, hardening plan, and a fresh-start decision (with SureThing / Project Agent)
+- **Reviewed the LIVE `gh-pages` code end-to-end.** Confirmed `main`/`docs` is stale and must not be used as the source of truth (e.g. `main/docs/privacy.html` still carries a leftover third-party email `ybgwon96@gmail.com` — NOT present on the live site; the live site currently has no privacy page at all).
+- **Gmail root cause found.** `gmail.readonly` is a Google *restricted* scope → only added Test users can connect until the OAuth consent screen passes Google verification. Also `initTokenClient` issues a ~1h access token with no refresh, and there is no `error_callback`, so connections silently expire/fail invisibly. Fix kit written: add `error_callback`, silent re-auth on 401 (`requestAccessToken({prompt:''})`), and a corrected sidebar hint (enable Gmail API, add the scope + a Test user, add `https://fame510.github.io` as an authorized JS origin, submit for verification to open to the public).
+- **Hardening plan.** Every key lives in `localStorage`, so a single XSS steals all of them → add a Content-Security-Policy (drafted `connect-src` allowlist covering every provider endpoint + `script-src` for Google GSI and the PeerJS CDN); recommend fine-grained GitHub tokens (limit blast radius); document the Duck House P2P trust limits (kick relies on honest-peer compliance; a leaked room code still only lets outsiders *request* to join, host must Admit) honestly in-room rather than leaving them for a dev to "discover."
+- **Confirmed solid (leave alone).** Duck House host-gate is enforced at the connection layer (join_request → host Admit → media, `if(!isHost)return`), WebRTC media is encrypted by DTLS-SRTP, and chat output is escape-first (no obvious HTML-injection XSS).
+- **Rebrand residue on live.** `.claw` CSS classes and the chat placeholder "Ask the claw to do something…" are still shipping; the model persona is already identity-locked to DUCKi, so only the visible chrome leaks — quick find/replace.
+- **Emoji.** ~50 total across all files, mostly *functional* glyphs (copy, TTS, tool, status, call controls, brand duck). Plan: swap control glyphs for inline SVG, keep the duck mascot as an SVG.
+- **Decision pending (owner):** stand up a fresh, cleanly-branded DUCKi / Duck House repo as the new home (internals are being overhauled). Noted this changes the live GitHub Pages URL and breaks the desktop download links + internal `REPO` variable that depend on the `easyclaw` name — those must be updated as part of the migration.
+- Growth/launch strategy work is tracked in a separate SureThing workspace, kept intentionally apart from the SHACKLE campaign.
+
 ### Session 8 — Power, logic, automation, and the backend blueprint
 - **Agent loop cap raised 8 → 40** (MAX_STEPS) so DUCKi chains many tools without stopping early.
 - **Aggressive tool-use directives** added to the system prompt (don't stop early, chain freely, research-first).
